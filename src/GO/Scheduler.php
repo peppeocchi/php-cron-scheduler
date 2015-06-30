@@ -19,6 +19,11 @@ class Scheduler
   private $output = '/dev/null';
 
   /**
+   * PHP binary
+   */
+  private $phpbin = PHP_BINARY;
+
+  /**
    * Init the datetime
    *
    */
@@ -116,7 +121,7 @@ class Scheduler
 
     $output = is_dir($this->output) ? $this->output.'/'.(str_replace('.', '_', $script)).'.log' : $this->output;
     
-    $command = PHP_BINARY . ' ' . $command . ' 1>> ' . $output . ' 2>&1 &';
+    $command = $this->phpbin . ' ' . $command . ' 1>> ' . $output . ' 2>&1 &';
     echo 'Exec ' . $command . PHP_EOL;
     exec($command);
   }
@@ -143,6 +148,17 @@ class Scheduler
   public function setOutput($output)
   {
     $this->output = $output;
+  }
+
+  /**
+   * Set the php binary
+   *
+   * @param [string] $bin - path to php binary
+   *
+   */
+  public function setPHPBin($bin)
+  {
+    $this->phpbin = $bin;
   }
 
 }
