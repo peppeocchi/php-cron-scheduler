@@ -51,7 +51,7 @@ $scheduler->run();
 Then add to your crontab
 
 ````
-* * * * * path/to/phpbin path/to/cronjobs.php > /dev/null 2>&1
+* * * * * path/to/phpbin path/to/cronjobs.php 1>> /dev/null 2>&1
 ````
 
 And you are ready to go.

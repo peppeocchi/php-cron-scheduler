@@ -113,7 +113,7 @@ class Scheduler
   {
     $output = is_dir($this->output) ? $this->output.'/'.(str_replace('.', '_', basename($command))).'.log' : $this->output;
     
-    $command = PHP_BINARY . ' ' . $command . ' > ' . $output . ' 2>&1 &';
+    $command = PHP_BINARY . ' ' . $command . ' 1>> ' . $output . ' 2>&1 &';
     exec($command);
   }
 }
