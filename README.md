@@ -21,3 +21,33 @@ or add the package to your `composer.json`
     }
 }
 ```
+
+## How it works
+Instead of adding a new entry in the crontab for each cronjob you have to run, you can add only one cron job to your crontab and define the commands in your .php file.
+
+Create your `cronjobs.php` file like this
+```php
+<?php
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use GO\Scheduler;
+
+$scheduler = new Scheduler();
+
+// Schedule command.php to run every minute
+$scheduler->schedule(__DIR__.'/command.php', '* * * * *');
+
+// Schedule command.php to run every day at 08:30
+$scheduler->schedule(__DIR__.'/command.php', '30 08 * * *');
+
+$scheduler->run();
+```
+
+Then add to your crontab
+
+````
+* * * * * path/to/phpbin path/to/cronjobs.php > /dev/null 2>&1
+````
+
+And you are ready to go
