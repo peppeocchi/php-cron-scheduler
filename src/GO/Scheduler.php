@@ -112,9 +112,12 @@ class Scheduler
    */
   private function exec($command)
   {
-    $output = is_dir($this->output) ? $this->output.'/'.(str_replace('.', '_', basename($command))).'.log' : $this->output;
+    $script = explode(' ', basename($command))[0];
+
+    $output = is_dir($this->output) ? $this->output.'/'.(str_replace('.', '_', $script)).'.log' : $this->output;
     
     $command = PHP_BINARY . ' ' . $command . ' 1>> ' . $output . ' 2>&1 &';
+    echo 'Exec ' . $command . PHP_EOL;
     exec($command);
   }
 
