@@ -35,12 +35,12 @@ class Scheduler
   public function run()
   {
     if (count($this->jobs) == 0) {
-      echo 'Nothing to do';
+      echo 'Nothing to do' . PHP_EOL;
       exit(1);
     }
 
     foreach ($this->jobs as $j) {
-      echo 'Executing ' . $j . "<br>\n";
+      echo 'Executing ' . $j . PHP_EOL;
       $this->exec($j);
     }
   }
