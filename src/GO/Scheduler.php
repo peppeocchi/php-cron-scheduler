@@ -5,7 +5,7 @@ class Scheduler
   /**
    * Timezone
    */
-  private $timezone;
+  private $timezone = 'Europe/Dublin';
 
   /**
    * The jobs that need to run now
