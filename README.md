@@ -4,7 +4,6 @@ PHP Cron Scheduler
 This is a simple cron jobs scheduler inspired by the [Laravel Task Scheduling](http://laravel.com/docs/5.1/scheduling).
 
 ## Installing via Composer
-
 The raccomended way is to install the php-cron-scheduler is through [Composer](https://getcomposer.org/).
 
 Please refer to [Getting Started](https://getcomposer.org/doc/00-intro.md) on how to download and install Composer.
@@ -21,6 +20,11 @@ or add the package to your `composer.json`
     }
 }
 ```
+
+## Config
+There are just few things to set in [Scheduler.php](https://github.com/peppeocchi/php-cron-scheduler/blob/master/src/GO/Scheduler.php)
+- Timezone - your timezone
+- Output - where the output has to be sent (by default is sent to `/dev/null`)
 
 ## How it works
 Instead of adding a new entry in the crontab for each cronjob you have to run, you can add only one cron job to your crontab and define the commands in your .php file.
@@ -50,4 +54,4 @@ Then add to your crontab
 * * * * * path/to/phpbin path/to/cronjobs.php > /dev/null 2>&1
 ````
 
-And you are ready to go
+And you are ready to go.
