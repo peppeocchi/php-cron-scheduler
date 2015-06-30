@@ -23,8 +23,8 @@ or add the package to your `composer.json`
 
 ## Config
 There are just few things to set in [Scheduler.php](https://github.com/peppeocchi/php-cron-scheduler/blob/master/src/GO/Scheduler.php)
-- Timezone - your timezone
-- Output - where the output has to be sent (by default is sent to `/dev/null`)
+- Timezone - your timezone `$scheduler->setTimezone('Europe/Rome')`
+- Output - where the output has to be sent (by default is sent to `/dev/null`) `$scheduler->setOutput('path/to/my/file/or/folder')`
 
 ## How it works
 Instead of adding a new entry in the crontab for each cronjob you have to run, you can add only one cron job to your crontab and define the commands in your .php file.

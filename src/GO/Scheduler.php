@@ -2,6 +2,7 @@
 
 class Scheduler
 {
+
   /**
    * Timezone
    */
@@ -116,4 +117,29 @@ class Scheduler
     $command = PHP_BINARY . ' ' . $command . ' 1>> ' . $output . ' 2>&1 &';
     exec($command);
   }
+
+  /**
+   * Set the timezone
+   *
+   * @param [string] timezone
+   *
+   */
+  public function setTimezone($timezone)
+  {
+    $this->timezone = $timezone;
+  }
+
+  /**
+   * Set where to send the output
+   *
+   * @param [string] $output - path file or folder, if a folder is specified,
+   *                           in that folder will be created several files,
+   *                           one for each scheduled command
+   *
+   */
+  public function setOutput($output)
+  {
+    $this->output = $output;
+  }
+
 }
