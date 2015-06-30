@@ -3,6 +3,11 @@
 class Scheduler
 {
   /**
+   * Timezone
+   */
+  private $timezone;
+
+  /**
    * The jobs that need to run now
    */
   private $jobs = [];
@@ -15,17 +20,11 @@ class Scheduler
   /**
    * Init the datetime
    *
-   * @param [string] $output - folder where to put the output of the jobs
-   *
    */
-  public function __construct($output = null)
+  public function __construct()
   {
     $this->dt = new \DateTime('now');
-    $this->dt->setTimezone(new \DateTimeZone('Europe/Dublin'));
-
-    if ($output !== null) {
-      $this->output = $output;
-    }
+    $this->dt->setTimezone(new \DateTimeZone($this->timezone));
   }
 
   /**
