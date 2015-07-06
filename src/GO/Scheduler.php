@@ -1,5 +1,9 @@
 <?php namespace GO;
 
+use GO\Job\Closure;
+use GO\Job\Php;
+use GO\Job\Raw;
+
 class Scheduler
 {
 
@@ -9,19 +13,10 @@ class Scheduler
   private $timezone = 'Europe/Dublin';
 
   /**
-   * The jobs that need to run now
-   */
-  private $jobs = [];
-
-  /**
    * Where to send the output of the job
    */
   private $output = '/dev/null';
 
-  /**
-   * PHP binary
-   */
-  private $phpbin = PHP_BINARY;
 
   /**
    * Init the datetime
@@ -31,99 +26,6 @@ class Scheduler
   {
     $this->dt = new \DateTime('now');
     $this->dt->setTimezone(new \DateTimeZone($this->timezone));
-  }
-
-  /**
-   * Run the scheduled commands
-   *
-   */
-  public function run()
-  {
-    if (count($this->jobs) == 0) {
-      echo 'Nothing to do' . PHP_EOL;
-      exit(1);
-    }
-
-    foreach ($this->jobs as $j) {
-      echo 'Executing ' . $j . PHP_EOL;
-      $this->exec($j);
-    }
-  }
-
-  /**
-   * Schedule a command at a given time
-   *
-   * @param [string] $command - command to execute
-   * @param [string] $cron - cron schedule
-   *
-   */
-  public function schedule($command, $cron)
-  {
-    if ($this->isDue($cron)) {
-      array_push($this->jobs, $command);
-    }
-  }
-
-  /**
-   * Check if a schedule is due now
-   *
-   * @param [string] $cron - cron schedule
-   *
-   * @return [bool]
-   */
-  private function isDue($cron)
-  {
-    $time = explode(' ', $cron);
-
-    $due = [
-      'minute'        => $time[0],
-      'hour'          => $time[1],
-      'dayOfTheMonth' => $time[2],
-      'month'         => $time[3],
-      'dayOfTheWeek'  => $time[4],
-    ];
-
-    $now = [
-      'minute'        => $this->dt->format('i'),
-      'hour'          => $this->dt->format('H'),
-      'dayOfTheMonth' => $this->dt->format('d'),
-      'month'         => $this->dt->format('m'),
-    ];
-
-    if ($due['minute'] != $now['minute'] && $due['minute'] != '*') {
-      return false;
-    }
-
-    if ($due['hour'] != $now['hour'] && $due['hour'] != '*') {
-      return false;
-    }
-
-    if ($due['dayOfTheMonth'] != $now['dayOfTheMonth'] && $due['dayOfTheMonth'] != '*') {
-      return false;
-    }
-
-    if ($due['month'] != $now['month'] && $due['month'] != '*') {
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
-   * Execute the command
-   *
-   * @param [string] $command - command to execute
-   *
-   */
-  private function exec($command)
-  {
-    $script = explode(' ', basename($command))[0];
-
-    $output = is_dir($this->output) ? $this->output.'/'.(str_replace('.', '_', $script)).'.log' : $this->output;
-    
-    $command = $this->phpbin . ' ' . $command . ' 1>> ' . $output . ' 2>&1 &';
-    echo 'Exec ' . $command . PHP_EOL;
-    exec($command);
   }
 
   /**
@@ -151,14 +53,59 @@ class Scheduler
   }
 
   /**
-   * Set the php binary
+   * PHP job
    *
-   * @param [string] $bin - path to php binary
+   * @param [string] $command
+   * @param [array] $args
+   *
+   * @return instance of GO\Job\Job
    *
    */
-  public function setPHPBin($bin)
+  public function php($command, array $args = [])
   {
-    $this->phpbin = $bin;
+    return new Php($command, $args);
+  }
+
+  /**
+   * I'm feeling lucky
+   * -----------------
+   * Guess the job to run by the file extension
+   *
+   * @param [string] $command
+   * @param [array] $args
+   *
+   * @return instance of GO\Job\Job
+   *
+   */
+  public function command($command, array $args = [])
+  {
+    $file = basename($command);
+  }
+
+  /**
+   * Raw job
+   *
+   * @param [string] $command
+   *
+   * @return instance of GO\Job\Job
+   *
+   */
+  public function raw($command)
+  {
+    return new Raw($command);
+  }
+
+  /**
+   * Closure job
+   *
+   * @param [closure] $closure
+   *
+   * @return instance of GO\Job\Job
+   *
+   */
+  public function call($closure)
+  {
+    return new Closure($closure);
   }
 
 }

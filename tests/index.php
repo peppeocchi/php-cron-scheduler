@@ -3,11 +3,12 @@
 use GO\Scheduler;
 
 $scheduler = new Scheduler();
-
-// Schedule command.php to run every minute
-$scheduler->schedule(__DIR__.'/command.php', '* * * * *');
-
-// Schedule command.php to run every day at 08:30
-$scheduler->schedule(__DIR__.'/command.php', '30 08 * * *');
-
-$scheduler->run();
+$res = $scheduler->php(__DIR__.'/command.php',[
+  '--foo' => 'bar',
+  '--baz' => '',
+  '-S' => '"Mi Awesome File"',
+])->at('* * * * *');
+$raw = $scheduler->raw('mycoolcommand')->at('10:00');
+$closure = $scheduler->call(function () {
+  return 28 + 1;
+})->at('25 May 2016 00:00');
