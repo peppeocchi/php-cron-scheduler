@@ -53,9 +53,9 @@ class Filesystem
     return $return;
   }
 
-  private function isValidFile($file, $sub = '')
+  private function isValidFile($file)
   {
-    if (!file_exists($this->path.$sub.$file)) {
+    if (!file_exists($this->path.$file)) {
       return false;
     }
 
