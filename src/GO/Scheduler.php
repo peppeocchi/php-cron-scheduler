@@ -1,8 +1,6 @@
 <?php namespace GO;
 
-use GO\Job\Closure;
-use GO\Job\Php;
-use GO\Job\Raw;
+use GO\Job\JobFactory;
 
 class Scheduler
 {
@@ -16,6 +14,8 @@ class Scheduler
    * Where to send the output of the job
    */
   private $output = '/dev/null';
+
+  private $jobs = [];
 
 
   /**
@@ -63,7 +63,7 @@ class Scheduler
    */
   public function php($command, array $args = [])
   {
-    return new Php($command, $args);
+    return $this->jobs[] = JobFactory::factory('GO\Job\Php', $command, $args);
   }
 
   /**
@@ -92,7 +92,7 @@ class Scheduler
    */
   public function raw($command)
   {
-    return new Raw($command);
+    return $this->jobs[] = JobFactory::factory('GO\Job\Raw', $command);
   }
 
   /**
@@ -105,7 +105,18 @@ class Scheduler
    */
   public function call($closure)
   {
-    return new Closure($closure);
+    return $this->jobs[] = JobFactory::factory('GO\Job\Closure', $command);
+  }
+
+  public function run()
+  {
+    $output = [];
+
+    foreach ($this->jobs as $job) {
+      $output[] = $job->exec();
+    }
+
+    return $output;
   }
 
 }
