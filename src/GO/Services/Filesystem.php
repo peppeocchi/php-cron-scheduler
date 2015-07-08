@@ -20,9 +20,7 @@ class Filesystem
 
   private function getExtension($file)
   {
-    $extension = explode('.', $file);
-
-    return $extension[count($extension) - 1];
+    return pathinfo($file, PATHINFO_EXTENSION);
   }
 
   private function getFiles($path)
@@ -72,5 +70,16 @@ class Filesystem
   public function getCommand()
   {
     return $this->file;
+  }
+
+  public function getPath()
+  {
+    return $this->path;
+  }
+
+  public function write($content, $file)
+  {
+    echo "Writing $content to $file";
+    return true;
   }
 }
