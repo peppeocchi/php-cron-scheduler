@@ -10,7 +10,7 @@ class JobFactory
 {
   private function __construct() {}
 
-  public static function factory($class, $command, $args)
+  public static function factory($class, $command, array $args = [])
   {
     if (!class_exists($class)) {
       throw new InvalidFactoryException("Class $class doesn't exists");
