@@ -8,9 +8,10 @@ $scheduler = new Scheduler();
 //   '--baz' => '',
 //   '-S' => '"Mi Awesome File"',
 // ])->at('* * * * *');
-$res = $scheduler->php(__DIR__.'/../src/GO/Job/*.php')->at('sa');
-// $raw = $scheduler->raw('mycoolcommand')->at('10:00');
+$scheduler->php(__DIR__.'/../src/GO/Job/Job.php')->at('sa')->output('myfile')->email('myemail');
+// $raw = $scheduler->raw('php artisan clean:cache all')->at('10:00');
 // $closure = $scheduler->call(function () {
 //   return 28 + 1;
 // })->at('25 May 2016 00:00');
-var_dump($res);
+
+var_dump($scheduler->run());
