@@ -4,5 +4,9 @@ use GO\Job\Job;
 
 class Closure extends Job
 {
-  protected function build() {}
+  protected function build()
+  {
+    $res = call_user_func($this->command, $this->args);
+    return $this->compiled = $res;
+  }
 }
