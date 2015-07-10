@@ -1,6 +1,8 @@
 PHP Cron Scheduler
 ==
 
+## Checkout the current [dev branch](https://github.com/peppeocchi/php-cron-scheduler/tree/dev) for advanced features
+
 This is a simple cron jobs scheduler inspired by the [Laravel Task Scheduling](http://laravel.com/docs/5.1/scheduling).
 
 ## Installing via Composer
