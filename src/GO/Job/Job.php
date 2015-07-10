@@ -1,12 +1,15 @@
 <?php namespace GO\Job;
 
 use GO\Services\Filesystem;
+use GO\Services\Interval;
+use GO\Services\TimeParser;
 
 abstract class Job
 {
   protected $command;
   protected $args;
   protected $compiled;
+  protected $time;
 
   private $fs;
 
@@ -17,6 +20,8 @@ abstract class Job
 
   public function __construct($job, array $args = [])
   {
+    $this->time = time();
+
     if (is_callable($job)) {
       $this->command = $job;
     } else {
@@ -35,17 +40,28 @@ abstract class Job
 
   public function at($expression)
   {
-    // Parse expression
-    if ($this->isDue()) {
+    $execution = new TimeParser($expression);
+
+    if ($execution->isDue()) {
       $this->due = true;
     }
 
     return $this;
   }
 
-  public function output($output)
+  /**
+   * @param [int] $interval - 
+   */
+  public function every($interval = '*')
+  {
+    return new Interval($this, $interval);
+  }
+
+  public function output($output, $mode = false)
   {
     $this->outputs = is_array($output) ? $output : [$output];
+
+    $this->mode = $mode === true ? 'a' : 'w';
 
     return $this;
   }
@@ -57,23 +73,23 @@ abstract class Job
     return $this;
   }
 
-  protected function isDue()
+  public function isDue()
   {
-    return rand() % 2 == 0;
+    return $this->due;
   }
 
   abstract protected function build();
 
   public function exec()
   {
-    $return = 'Executing ' . $this->compiled;
+    $return = exec($this->compiled);
 
     foreach ($this->outputs as $output) {
-      $this->fs->write($return, $output);
+      $this->fs->write($return, $output, $this->mode);
     }
 
     foreach ($this->emails as $email) {
-      echo 'Sending email to ' . $email;
+      mail($email, 'Cronjob', $output);
     }
     return $return;
   }

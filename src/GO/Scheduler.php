@@ -2,6 +2,8 @@
 
 use GO\Job\JobFactory;
 
+use GO\Services\DateTime;
+
 class Scheduler
 {
 
@@ -17,6 +19,8 @@ class Scheduler
 
   private $jobs = [];
 
+  private $time;
+
 
   /**
    * Init the datetime
@@ -24,8 +28,10 @@ class Scheduler
    */
   public function __construct()
   {
-    $this->dt = new \DateTime('now');
-    $this->dt->setTimezone(new \DateTimeZone($this->timezone));
+    $this->dt = DateTime::get();
+    $this->dt->setTimezone($this->timezone);
+
+    $this->time = time();
   }
 
   /**
@@ -36,7 +42,7 @@ class Scheduler
    */
   public function setTimezone($timezone)
   {
-    $this->timezone = $timezone;
+    $this->dt->setTimezone($timezone);
   }
 
   /**
@@ -113,7 +119,9 @@ class Scheduler
     $output = [];
 
     foreach ($this->jobs as $job) {
-      $output[] = $job->exec();
+      if ($job->isDue()) {
+        $output[] = $job->exec();
+      }
     }
 
     return $output;
