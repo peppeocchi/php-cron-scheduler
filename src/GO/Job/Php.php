@@ -26,4 +26,11 @@ class Php extends Job
 
     return $this->compiled = trim($command);
   }
+
+  public function useBin($bin)
+  {
+    $this->phpbin = file_exists($bin) ? $bin : $this->phpbin;
+
+    return $this;
+  }
 }
