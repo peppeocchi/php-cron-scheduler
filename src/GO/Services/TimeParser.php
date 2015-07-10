@@ -20,16 +20,25 @@ class TimeParser
   private function analyse($expression)
   {
     $cron = explode(' ', $expression);
-    $this->minute = $this->parse($cron[0]);
-    $this->hour = $this->parse($cron[1]);
-    $this->day = $this->parse($cron[2]);
-    $this->month = $this->parse($cron[3]);
-    $this->dayOfWeek = $this->parse($cron[4]);
+    $this->minute = $this->parse($cron[0], 'i');
+    $this->hour = $this->parse($cron[1], 'h');
+    $this->day = $this->parse($cron[2], 'd');
+    $this->month = $this->parse($cron[3], 'm');
+    $this->dayOfWeek = $this->parse($cron[4], 'w');
 
     return $expression;
   }
 
-  private function parse($string)
+  /**
+   * Parse a partial expression
+   *
+   * @param string $string - the expression to parse
+   * @param string $unit - default to 'i' = minute
+   *
+   * @return array
+   *
+   */
+  private function parse($string, $unit = 'i')
   {
     if ($string === '*') {
       return $string;
