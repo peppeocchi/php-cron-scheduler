@@ -30,7 +30,7 @@ There are just few things to set in [Scheduler.php](https://github.com/peppeocch
 ## How it works
 Instead of adding a new entry in the crontab for each cronjob you have to run, you can add only one cron job to your crontab and define the commands in your .php file.
 
-Create your `cronjobs.php` file like this
+Create your `scheduler.php` file like this
 ```php
 <?php require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -86,7 +86,7 @@ $scheduler->run();
 Then add to your crontab
 
 ````
-* * * * * path/to/phpbin path/to/cronjobs.php 1>> /dev/null 2>&1
+* * * * * path/to/phpbin path/to/scheduler.php 1>> /dev/null 2>&1
 ````
 
 And you are ready to go.
