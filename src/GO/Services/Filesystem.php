@@ -77,9 +77,12 @@ class Filesystem
     return $this->path;
   }
 
-  public function write($content, $file)
+  public function write($content, $file, $mode = 'w')
   {
-    echo "Writing $content to $file";
+    $handle = fopen($file, $mode);
+    fwrite($handle, $content . "\n");
+    fclose($handle);
+
     return true;
   }
 }
