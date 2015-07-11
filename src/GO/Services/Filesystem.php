@@ -77,7 +77,7 @@ class Filesystem
     return $this->path;
   }
 
-  public function write($content, $file, $mode = 'w')
+  public static function write($content, $file, $mode = 'w')
   {
     $handle = fopen($file, $mode);
     fwrite($handle, $content . "\n");

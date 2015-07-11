@@ -6,7 +6,6 @@ class Closure extends Job
 {
   protected function build()
   {
-    $res = call_user_func($this->command, $this->args);
-    return $this->compiled = $res;
+    return $this->compiled = $this->command;
   }
 }

@@ -24,6 +24,16 @@ class Php extends Job
       }
     }
 
+    if (count($this->outputs) > 0) {
+      $command .= ' | tee ';
+      $command .= $this->mode === 'a' ? '-a ' : '';
+      foreach ($this->outputs as $o) {
+        $command .= $o.' ';
+      }
+    }
+
+    $command .= '> /dev/null 2>&1 &';
+
     return $this->compiled = trim($command);
   }
 

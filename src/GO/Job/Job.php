@@ -6,18 +6,69 @@ use GO\Services\TimeParser;
 
 abstract class Job
 {
+  /**
+   * The command
+   *
+   * @var string
+   */
   protected $command;
+
+  /**
+   * The arguments to be passed to the command
+   *
+   * @var array
+   */
   protected $args;
+
+  /**
+   * The compiled command
+   *
+   * @var string
+   */
   protected $compiled;
+
+  /**
+   * The job start time
+   *
+   * @var int
+   */
   protected $time;
 
+  /**
+   * Filesystem manager
+   *
+   * @var GO\Services\Filesystem
+   */
   private $fs;
 
-  private $outputs = [];
+  /**
+   * The files where the output has to be sent
+   *
+   * @var array
+   */
+  protected $outputs = [];
+
+  /**
+   * The emails where the output has to be sent
+   *
+   * @var array
+   */
   private $emails = [];
 
+  /**
+   * Bool that define if the command is due
+   *
+   * @var bool
+   */
   public $due = false;
 
+  /**
+   * Create a new instance of Job
+   *
+   * @param mixed $job
+   * @param array $args
+   * @return void
+   */
   public function __construct($job, array $args = [])
   {
     $this->time = time();
@@ -34,10 +85,14 @@ abstract class Job
     if (method_exists($this, 'init')) {
       $this->init();
     }
-
-    $this->build();
   }
 
+  /**
+   * Define when to run the job
+   *
+   * @param string expression
+   * @return $this
+   */
   public function at($expression)
   {
     $execution = new TimeParser($expression);
@@ -50,13 +105,23 @@ abstract class Job
   }
 
   /**
-   * @param [int] $interval - 
+   * Define the execution interval of the job
+   *
+   * @param int $interval - fallback to string '*'
+   * @return GO\Services\Interval
    */
   public function every($interval = '*')
   {
     return new Interval($this, $interval);
   }
 
+  /**
+   * Define the file/s where to send the output of the job
+   *
+   * @param string/array $ouput
+   * @param bool $mode
+   * @return $this
+   */
   public function output($output, $mode = false)
   {
     $this->outputs = is_array($output) ? $output : [$output];
@@ -66,6 +131,12 @@ abstract class Job
     return $this;
   }
 
+  /**
+   * Define the email address/es where to send the output of the job
+   *
+   * @param string/array $email
+   * @return $this
+   */
   public function email($email)
   {
     $this->emails = is_array($email) ? $email : [$email];
@@ -73,23 +144,43 @@ abstract class Job
     return $this;
   }
 
+  /**
+   * Check if the job is due to run
+   *
+   * @return bool
+   */
   public function isDue()
   {
     return $this->due;
   }
 
+  /**
+   * Abstract function build and compile the command
+   *
+   */
   abstract protected function build();
 
+  /**
+   * Execute the job
+   *
+   * @return string - The output of the executed job
+   */
   public function exec()
   {
-    $return = exec($this->compiled);
-
-    foreach ($this->outputs as $output) {
-      $this->fs->write($return, $output, $this->mode);
+    $compiled = $this->build();
+    if (is_callable($this->compiled)) {
+      $return = call_user_func($this->command, $this->args);
+      foreach ($this->outputs as $output) {
+        Filesystem::write($return, $output, $this->mode);
+      }
+    } else {
+      $return = exec($this->compiled);
     }
 
-    foreach ($this->emails as $email) {
-      mail($email, 'Cronjob', $output);
+    foreach ($this->outputs as $output) {
+      foreach ($this->emails as $email) {
+        mail($email, 'Cronjob execution', $output);
+      }
     }
     return $return;
   }
