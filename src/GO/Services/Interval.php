@@ -6,19 +6,17 @@
  */
 class Interval
 {
-  private $second;
-  private $minute;
-  private $hour;
-  private $day;
-  private $month;
-  private $year;
-
   /**
    * Instance of GO\Job\Job
    *
    */
   private $job;
 
+  /**
+   * Interval
+   *
+   * @var string
+   */
   private $interval;
 
   /**
@@ -26,7 +24,7 @@ class Interval
    *
    * @param GO\Job\Job $job
    * @param string $interval
-   *
+   * @return void
    */
   public function __construct(/*GO\Job\Job */$job, $interval = '*')
   {
@@ -45,7 +43,6 @@ class Interval
    * Execute job every $interval minute
    *
    * @return instance of GO\Job\Job
-   *
    */
   public function minute()
   {
@@ -56,9 +53,7 @@ class Interval
    * Execute job every $interval hour
    *
    * @param string $minute
-   *
    * @return instance of GO\Job\Job
-   *
    */
   public function hour($minute = '00')
   {
@@ -69,9 +64,7 @@ class Interval
    * Execute job every $interval hour
    *
    * @param string $string - hour:minute
-   *
    * @return instance of GO\Job\Job
-   *
    */
   public function day($string = '00:00')
   {
@@ -83,9 +76,7 @@ class Interval
    * Execute job every $interval hour
    *
    * @param string $string - day hour:minute
-   *
    * @return instance of GO\Job\Job
-   *
    */
   public function month($string = '01 00:00')
   {
