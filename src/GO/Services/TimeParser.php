@@ -4,19 +4,65 @@ use GO\Services\DateTime;
 
 class TimeParser
 {
+  /**
+   * Cron expression
+   *
+   * @var string
+   */
   private $expression;
 
+  /**
+   * Minute
+   *
+   * @var string
+   */
   private $minute;
+
+  /**
+   * Hour
+   *
+   * @var string
+   */
   private $hour;
+
+  /**
+   * Day
+   *
+   * @var string
+   */
   private $day;
+
+  /**
+   * Month
+   *
+   * @var string
+   */
   private $month;
+
+  /**
+   * Day of week
+   *
+   * @var string
+   */
   private $dayOfWeek;
 
+  /**
+   * Create new instance, parse cron expression
+   *
+   * @param string $expression
+   * @return void
+   */
   public function __construct($expression)
   {
     $this->expression = $this->analyse(trim($expression));
   }
 
+  /**
+   * Analyse cron expression
+   *
+   * @param string $expression
+   * @return string
+   */
   private function analyse($expression)
   {
     $cron = explode(' ', $expression);
@@ -34,9 +80,7 @@ class TimeParser
    *
    * @param string $string - the expression to parse
    * @param string $unit - default to 'i' = minute
-   *
    * @return array
-   *
    */
   private function parse($string, $unit = 'i')
   {
@@ -63,6 +107,11 @@ class TimeParser
     return count($array) === 0 ? [$string] : $array;
   }
 
+  /**
+   * Check if a cron expression is due
+   *
+   * @return bool
+   */
   public function isDue()
   {
     $now = DateTime::now();
@@ -90,6 +139,13 @@ class TimeParser
     return true;
   }
 
+  /**
+   * Check if a partial time string is now
+   *
+   * @param string $now - current part time
+   * @param mixed $schedule - string '*' or array of accepted times
+   * @return bool
+   */
   private function isNow($now, $schedule)
   {
     if ($schedule == '*') {
