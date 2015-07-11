@@ -92,7 +92,7 @@ class Interval
     $date = explode(' ', $string);
     $time = explode(':', $date[1]);
 
-    return $this->job->at("{$time[1]} {$hour} * {$this->interval}");
+    return $this->job->at("{$time[1]} {$time[0]} * {$this->interval} *");
   }
 
   // Removed
