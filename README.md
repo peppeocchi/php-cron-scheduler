@@ -48,27 +48,16 @@ $scheduler->raw('echo "I am a raw command!"')
 
 // Schedule a command and send output to cronjob.log - append to the existing file
 $scheduler->php(__DIR__.'/../tests/cronjob.php')
-  ->at('* * * * *')
+  ->at('01 00 25 * *')
   ->output(__DIR__.'/../tests/cronjob.log', true);
 
 // Send output to multiple files
 $scheduler->php(__DIR__.'/../tests/cronjob.php')
-  ->at('* * * * *')
+  ->at('01 00 25 * *')
   ->output([
     __DIR__.'/../tests/cronjob.log',
     __DIR__.'/../tests/my_other.log',
   ], true);
-
-// Send output to file and to email
-$scheduler->php(__DIR__.'/../tests/cronjob.php')
-  ->at('* * * * *')
-  ->output(__DIR__.'/../tests/cronjob.log', true)
-  ->email('my@cool.email');
-
-// Send output to multiple emails
-$scheduler->php(__DIR__.'/../tests/cronjob.php')
-  ->at('* * * * *')
-  ->email(['my@cool.email', 'my@othercool.email']);
 
 // Pretty scheduling - run every day at 10:30
 $scheduler->php(__DIR__.'/../tests/cronjob.php')
@@ -79,6 +68,15 @@ $scheduler->php(__DIR__.'/../tests/cronjob.php')
 $scheduler->php(__DIR__.'/../tests/cronjob.php')
   ->every()
   ->month('25 00:13');
+
+// Run your own function every hour at minute 05
+$scheduler->call(function () {
+  return 'I am a function!';
+})->every()->minute()->output([
+  __DIR__.'/../tests/cronjob.log',
+  __DIR__.'/../tests/raw.log',
+]);
+
 
 $scheduler->run();
 ```
