@@ -18,23 +18,7 @@ class Php extends Job
   {
     $command = $this->phpbin . ' ' . $this->command;
 
-    if (count($this->args)) {
-      foreach ($this->args as $key => $value) {
-        $command .= ' ' . $key . ' ' . $value;
-      }
-    }
-
-    if (count($this->outputs) > 0) {
-      $command .= ' | tee ';
-      $command .= $this->mode === 'a' ? '-a ' : '';
-      foreach ($this->outputs as $o) {
-        $command .= $o.' ';
-      }
-    }
-
-    $command .= '> /dev/null 2>&1 &';
-
-    return $this->compiled = trim($command);
+    return $this->compile($command);
   }
 
   public function useBin($bin)
