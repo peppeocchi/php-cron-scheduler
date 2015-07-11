@@ -168,7 +168,7 @@ abstract class Job
    */
   protected function compile($command)
   {
-    if (count($this->args)) {
+    if (count($this->args) > 0) {
       foreach ($this->args as $key => $value) {
         $command .= ' ' . $key . ' ' . $value;
       }
