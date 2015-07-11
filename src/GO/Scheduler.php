@@ -1,7 +1,6 @@
 <?php namespace GO;
 
 use GO\Job\JobFactory;
-
 use GO\Services\DateTime;
 
 class Scheduler
@@ -9,6 +8,8 @@ class Scheduler
 
   /**
    * Timezone
+   *
+   * @var string
    */
   private $timezone = 'Europe/Dublin';
 
@@ -17,14 +18,25 @@ class Scheduler
    */
   private $output = '/dev/null';
 
+  /**
+   * The scheduled jobs
+   *
+   * @var array of GO\Job\Job
+   */
   private $jobs = [];
 
+  /**
+   * The scheduler start time
+   *
+   * @var int
+   */
   private $time;
 
 
   /**
-   * Init the datetime
+   * Create a new Scheduler instance and init the datetime
    *
+   * @return void
    */
   public function __construct()
   {
@@ -37,8 +49,8 @@ class Scheduler
   /**
    * Set the timezone
    *
-   * @param [string] timezone
-   *
+   * @param string $timezone
+   * @return void
    */
   public function setTimezone($timezone)
   {
@@ -48,10 +60,10 @@ class Scheduler
   /**
    * Set where to send the output
    *
-   * @param [string] $output - path file or folder, if a folder is specified,
+   * @param string $output - path file or folder, if a folder is specified,
    *                           in that folder will be created several files,
    *                           one for each scheduled command
-   *
+   * @return void
    */
   public function setOutput($output)
   {
@@ -61,11 +73,9 @@ class Scheduler
   /**
    * PHP job
    *
-   * @param [string] $command
-   * @param [array] $args
-   *
+   * @param string $command
+   * @param array $args
    * @return instance of GO\Job\Job
-   *
    */
   public function php($command, array $args = [])
   {
@@ -77,11 +87,9 @@ class Scheduler
    * -----------------
    * Guess the job to run by the file extension
    *
-   * @param [string] $command
-   * @param [array] $args
-   *
+   * @param string $command
+   * @param array $args
    * @return instance of GO\Job\Job
-   *
    */
   public function command($command, array $args = [])
   {
@@ -91,10 +99,8 @@ class Scheduler
   /**
    * Raw job
    *
-   * @param [string] $command
-   *
+   * @param string $command
    * @return instance of GO\Job\Job
-   *
    */
   public function raw($command)
   {
@@ -104,16 +110,19 @@ class Scheduler
   /**
    * Closure job
    *
-   * @param [closure] $closure
-   *
+   * @param callable $closure
    * @return instance of GO\Job\Job
-   *
    */
   public function call($closure)
   {
-    return $this->jobs[] = JobFactory::factory('GO\Job\Closure', $command);
+    return $this->jobs[] = JobFactory::factory('GO\Job\Closure', $closure);
   }
 
+  /**
+   * Run the scheduled jobs
+   *
+   * @return array - The output of the executed jobs
+   */
   public function run()
   {
     $output = [];
