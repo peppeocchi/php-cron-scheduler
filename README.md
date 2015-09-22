@@ -66,7 +66,7 @@ $scheduler->raw('echo "I am a raw command!"')
 $scheduler->call(function () {
     return 'I am a function!';
   })
-  ->every()->minute()
+  ->every()->day('10:30')
   ->output([
     __DIR__.'/callable1.log',
     __DIR__.'/callable2.log',
