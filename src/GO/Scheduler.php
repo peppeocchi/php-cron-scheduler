@@ -128,7 +128,7 @@ class Scheduler
   public function jobsInBackgroundFirst()
   {
     usort($this->jobs, function ($a, $b) {
-      return $b->runInBackground - $a->background;
+      return $b->runInBackground - $a->runInBackground;
     });
   }
 
