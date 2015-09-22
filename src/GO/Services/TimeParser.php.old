@@ -2,6 +2,7 @@
 
 use GO\Services\DateTime;
 
+
 class TimeParser
 {
   /**
@@ -99,7 +100,7 @@ class TimeParser
     // Dash
     $values = explode('-', $string);
     if (count($values) === 2) {
-      for ($i = intval($values[0]); $i <= intval($values[1]); $i++) { 
+      for ($i = intval($values[0]); $i <= intval($values[1]); $i++) {
         $array[] = $i;
       }
     }
