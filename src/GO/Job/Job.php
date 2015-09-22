@@ -63,6 +63,14 @@ abstract class Job
   public $due = false;
 
   /**
+   * Bool that defines if the command has run in backgroud
+   *
+   * @var bool
+   */
+  public $runInBackground = true;
+
+
+  /**
    * Create a new instance of Job
    *
    * @param mixed $job
@@ -141,6 +149,8 @@ abstract class Job
   {
     $this->emails = is_array($email) ? $email : [$email];
 
+    $this->runInBackground = false;
+
     return $this;
   }
 
@@ -182,7 +192,10 @@ abstract class Job
       }
     }
 
-    $command .= '> /dev/null 2>&1 &';
+    $command .= '> /dev/null 2>&1';
+    if ($this->runInBackground === true) {
+      $command .= ' &';
+    }
 
     return $this->compiled = trim($command);
   }
