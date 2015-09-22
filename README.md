@@ -45,7 +45,10 @@ $scheduler = new Scheduler();
  * Schedule cronjob.php to run every minute
  *
  */
-$scheduler->php(__DIR__.'/cronjob.php')->at('* * * * *')->output(__DIR__.'/cronjob.log');
+$scheduler->php(__DIR__.'/cronjob.php')
+  ->at('* * * * *')
+  ->output(__DIR__.'/cronjob.log')
+  ->email('myemail@server.net');
 
 /**
  * Schedule a raw command to tun every minute between 00 and 04 of every hour,
@@ -63,10 +66,10 @@ $scheduler->raw('echo "I am a raw command!"')
 $scheduler->call(function () {
     return 'I am a function!';
   })
-  ->every()->day('10:30')
+  ->every()->minute()
   ->output([
-    __DIR__.'/../tests/callable1.log',
-    __DIR__.'/../tests/callable2.log',
+    __DIR__.'/callable1.log',
+    __DIR__.'/callable2.log',
   ]);
 
 /**
@@ -75,7 +78,8 @@ $scheduler->call(function () {
  */
 $scheduler->php(__DIR__.'/../tests/cronjob.php')
   ->every()
-  ->month('25 00:13');
+  ->month('25 00:13')
+  ->email(['dev1@server.net' => 'Dev 1', 'dev2@mail.com' => 'Dev 2']);
 
 
 $scheduler->run();
