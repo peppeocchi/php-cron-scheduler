@@ -1,5 +1,6 @@
 <?php namespace GO\Job;
 
+use GO\Services\Filesystem;
 use GO\Services\Interval;
 
 use Cron\CronExpression;
