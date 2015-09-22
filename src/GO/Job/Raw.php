@@ -6,6 +6,6 @@ class Raw extends Job
 {
   protected function build()
   {
-    return $this->compiled = trim($this->command);
+    return $this->compile(trim($this->command));
   }
 }
