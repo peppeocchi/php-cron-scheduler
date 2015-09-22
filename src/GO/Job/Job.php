@@ -79,7 +79,7 @@ abstract class Job
    *
    * @var bool
    */
-  private $runInBackground = true;
+  public $runInBackground = true;
 
 
   /**

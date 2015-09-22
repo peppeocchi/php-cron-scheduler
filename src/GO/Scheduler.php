@@ -119,6 +119,20 @@ class Scheduler
   }
 
   /**
+   * Move the jobs that can run in background on top of the array
+   * This is done to avoid blocking jobs that can slow down the
+   * execution of other jobs
+   *
+   * @return void
+   */
+  public function jobsInBackgroundFirst()
+  {
+    usort($this->jobs, function ($a, $b) {
+      return $b->runInBackground - $a->background;
+    });
+  }
+
+  /**
    * Run the scheduled jobs
    *
    * @return array - The output of the executed jobs
@@ -126,6 +140,9 @@ class Scheduler
   public function run()
   {
     $output = [];
+
+    // First reorder the cronjobs
+    $this->jobsInBackgroundFirst();
 
     foreach ($this->jobs as $job) {
       if ($job->isDue()) {
