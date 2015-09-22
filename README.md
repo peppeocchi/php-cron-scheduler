@@ -34,48 +34,48 @@ Create your `scheduler.php` file like this
 ```php
 <?php require_once __DIR__ . '/../vendor/autoload.php';
 
+
 use GO\Scheduler;
+
 
 $scheduler = new Scheduler();
 
-// Schedule cronjob.php to run every minute
-$scheduler->php(__DIR__.'/../tests/cronjob.php')->at('* * * * *');
 
-// Schedule a raw command to tun every minute between 00 and 04 of every hour, send the output to raw.log
+/**
+ * Schedule cronjob.php to run every minute
+ *
+ */
+$scheduler->php(__DIR__.'/cronjob.php')->at('* * * * *')->output(__DIR__.'/cronjob.log');
+
+/**
+ * Schedule a raw command to tun every minute between 00 and 04 of every hour,
+ * send the output to raw.log
+ *
+ */
 $scheduler->raw('echo "I am a raw command!"')
-  ->at('00-04 * * * *')
-  ->output(__DIR__.'/../tests/raw.log');
+  ->at('* * * * *')
+  ->output(__DIR__.'/raw.log');
 
-// Schedule a command and send output to cronjob.log - append to the existing file
-$scheduler->php(__DIR__.'/../tests/cronjob.php')
-  ->at('01 00 25 * *')
-  ->output(__DIR__.'/../tests/cronjob.log', true);
-
-// Send output to multiple files
-$scheduler->php(__DIR__.'/../tests/cronjob.php')
-  ->at('01 00 25 * *')
+/**
+ * Run your own function every day at 10:30
+ *
+ */
+$scheduler->call(function () {
+    return 'I am a function!';
+  })
+  ->every()->day('10:30')
   ->output([
-    __DIR__.'/../tests/cronjob.log',
-    __DIR__.'/../tests/my_other.log',
-  ], true);
+    __DIR__.'/../tests/callable1.log',
+    __DIR__.'/../tests/callable2.log',
+  ]);
 
-// Pretty scheduling - run every day at 10:30
-$scheduler->php(__DIR__.'/../tests/cronjob.php')
-  ->every()
-  ->day('10:30');
-
-// Pretty scheduling - run every 25th of month at 00:13
+/**
+ * Pretty scheduling - run every 25th of month at 00:13
+ *
+ */
 $scheduler->php(__DIR__.'/../tests/cronjob.php')
   ->every()
   ->month('25 00:13');
-
-// Run your own function every hour at minute 05
-$scheduler->call(function () {
-  return 'I am a function!';
-})->every()->minute()->output([
-  __DIR__.'/../tests/cronjob.log',
-  __DIR__.'/../tests/raw.log',
-]);
 
 
 $scheduler->run();

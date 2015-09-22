@@ -1,8 +1,8 @@
 <?php namespace GO\Job;
 
-use GO\Services\Filesystem;
 use GO\Services\Interval;
-use GO\Services\TimeParser;
+
+use Cron\CronExpression;
 
 abstract class Job
 {
@@ -73,12 +73,12 @@ abstract class Job
   {
     $this->time = time();
 
-    if (is_callable($job)) {
+    // if (is_callable($job)) {
       $this->command = $job;
-    } else {
-      $this->fs = new Filesystem($job);
-      $this->command = $this->fs->getCommand();
-    }
+    // } else {
+      // $this->fs = new Filesystem($job);
+      // $this->command = $this->fs->getCommand();
+    // }
 
     $this->args = $args;
 
@@ -95,7 +95,7 @@ abstract class Job
    */
   public function at($expression)
   {
-    $execution = new TimeParser($expression);
+    $execution = CronExpression::factory($expression);
 
     if ($execution->isDue()) {
       $this->due = true;

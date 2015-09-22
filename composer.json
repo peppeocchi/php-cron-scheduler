@@ -11,7 +11,8 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "php": ">=5.5.0"
+        "php": ">=5.5.0",
+        "mtdowling/cron-expression": "dev-master"
     },
     "autoload": {
         "psr-0": {
