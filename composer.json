@@ -12,7 +12,8 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.5.0",
-        "mtdowling/cron-expression": "dev-master"
+        "mtdowling/cron-expression": "dev-master",
+        "swiftmailer/swiftmailer": "@stable"
     },
     "autoload": {
         "psr-0": {

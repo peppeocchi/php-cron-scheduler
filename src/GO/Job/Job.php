@@ -4,6 +4,10 @@ use GO\Services\Filesystem;
 use GO\Services\Interval;
 
 use Cron\CronExpression;
+use Swift_Attachment;
+use Swift_Mailer;
+use Swift_MailTransport;
+use Swift_Message;
 
 abstract class Job
 {
@@ -57,6 +61,13 @@ abstract class Job
   private $emails = [];
 
   /**
+   * The email address used to send the email
+   *
+   * @var array
+   */
+  private $emailFrom = ['cronjob@server.my' => 'My Email Server'];
+
+  /**
    * Bool that define if the command is due
    *
    * @var bool
@@ -68,7 +79,7 @@ abstract class Job
    *
    * @var bool
    */
-  public $runInBackground = true;
+  private $runInBackground = true;
 
 
   /**
@@ -218,11 +229,34 @@ abstract class Job
       $return = exec($this->compiled);
     }
 
-    foreach ($this->outputs as $output) {
-      foreach ($this->emails as $email) {
-        mail($email, 'Cronjob execution', $output);
-      }
+    if ($this->emails) {
+      $this->sendEmails();
     }
+
     return $return;
+  }
+
+  /**
+   * Send the output to an email address
+   *
+   * @return void
+   */
+  private function sendEmails()
+  {
+    $transport = Swift_MailTransport::newInstance();
+    $mailer = Swift_Mailer::newInstance($transport);
+
+    $message = Swift_Message::newInstance()
+      ->setSubject('Cronjob execution')
+      ->setFrom($this->emailFrom)
+      ->setTo($this->emails)
+      ->setBody('Cronjob output attached')
+      ->addPart('<q>Cronjob output attached</q>', 'text/html');
+
+    foreach ($this->outputs as $file) {
+      $message->attach(Swift_Attachment::fromPath($file));
+    }
+
+    $mailer->send($message);
   }
 }
