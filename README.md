@@ -53,11 +53,12 @@ $scheduler->php(__DIR__.'/cronjob.php')
 /**
  * Schedule a raw command to tun every minute between 00 and 04 of every hour,
  * send the output to raw.log
+ * Pass `true` as a second parameter to append the output to that file
  *
  */
 $scheduler->raw('echo "I am a raw command!"')
   ->at('* * * * *')
-  ->output(__DIR__.'/raw.log');
+  ->output(__DIR__.'/raw.log', true);
 
 /**
  * Run your own function every day at 10:30
