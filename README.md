@@ -10,7 +10,7 @@ Please refer to [Getting Started](https://getcomposer.org/doc/00-intro.md) on ho
 
 After you have downloaded/installed Composer, run
 
-`composer.phar require peppeocchi/php-cron-scheduler`
+`php composer.phar require peppeocchi/php-cron-scheduler`
 
 or add the package to your `composer.json`
 ```json
@@ -23,9 +23,11 @@ or add the package to your `composer.json`
 
 ## Config
 There are just few things to set in [Scheduler.php](https://github.com/peppeocchi/php-cron-scheduler/blob/master/src/GO/Scheduler.php)
-- Timezone - your timezone `$scheduler->setTimezone('Europe/Rome')`, default is `Europe/Dublin`
 - For some job you can specify a custom the path to the interpreter
-  `$scheduler->php('path/to/my/command')->useBin('path/to/my/php/bin')`, default is `PHP_BINARY`, or `/usr/bin/php` if that constant is empty
+  ```php
+  $scheduler->php('path/to/my/command')->useBin('path/to/my/php/bin')
+  ```
+  default is `PHP_BINARY`, or `/usr/bin/php` if that constant is empty
 
 ## How it works
 Instead of adding a new entry in the crontab for each cronjob you have to run, you can add only one cron job to your crontab and define the commands in your .php file.
@@ -93,3 +95,19 @@ Then add to your crontab
 ````
 
 And you are ready to go.
+
+### Supported job types
+After creating a new `Scheduler` instance, you can add few type of jobs
+- `php('myCommand')`, execute a `PHP` job (you can set your own `PHP_BINARY` by calling `$scheduler->php('myCommand')->useBin('myBin')`)
+- `raw('myCommand')`, execute a raw command in the shell, you can use this type if you want to pipe several commands like `ps aux | grep memcached`
+- `call('myFunction')`, execute your own function
+- you can optionally write your own interpreter (if you want you can do a PR to add the interpreter to this repo), just extend `GO\Job\Job` and define the `build()` method, and an optional `init()` if it requires to be initiated before running the command - eg. to define a bin path
+
+### Time format
+`Scheduler` uses `Cron\CronExpression` as an expression parser.
+So you can schedule the job using the `->at('myCronExpression')` method and passing to that your cron expression (eg. `* * * * *`) or one of the expression supported by [mtdowling/cron-expression](https://github.com/mtdowling/cron-expression)
+Optionally you can use the "pretty scheduling" that lets you define times in an eloquent way. To do that you should call the `->every()` followed by
+- `->minute()`, the job will be scheduled to run every minute
+- `->hour('02')` the job will be scheduled to run every hour. Default `minute` is `00` but you can override that with your own `minute` (in the example it will run every hour at minute `02`)
+- `->day('10:23')` the job will be scheduled to run every day. Default `hour:minute` is `00:00` but you can override that with your own `hour:minute`
+- `->month('25 10:30')` the job will be scheduled to run every month. Default `day hour:minute` is `01 00:00` but you can override that with your own `day hour:minute`
