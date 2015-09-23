@@ -98,9 +98,9 @@ And you are ready to go.
 
 ### Job types
 After creating a new `Scheduler` instance, you can add few type of jobs
-- `php('myCommand')`, execute a `PHP` job (you can set your own `PHP_BINARY` by calling `$scheduler->php('myCommand')->useBin('myBin')`)
-- `raw('myCommand')`, execute a raw command in the shell, you can use this type if you want to pipe several commands like `ps aux | grep memcached`
-- `call('myFunction')`, execute your own function
+- `->php('myCommand')`, execute a `PHP` job (you can set your own `PHP_BINARY` by calling `$scheduler->php('myCommand')->useBin('myBin')`)
+- `->raw('myCommand')`, execute a raw command in the shell, you can use this type if you want to pipe several commands like `ps aux | grep memcached`
+- `->call('myFunction')`, execute your own function
 - you can optionally write your own interpreter (if you want you can do a PR to add the interpreter to this repo), just extend `GO\Job\Job` and define the `build()` method, and an optional `init()` if it requires to be initiated before running the command - eg. to define a bin path
 
 ### Schedule time
