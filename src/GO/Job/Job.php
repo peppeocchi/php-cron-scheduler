@@ -259,4 +259,14 @@ abstract class Job
 
     $mailer->send($message);
   }
+
+  /**
+   * Run the command in foreground
+   *
+   * @return void
+   */
+  public function runInForeground()
+  {
+    $this->runInBackground = false;
+  }
 }
