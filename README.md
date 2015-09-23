@@ -23,16 +23,18 @@ or add the package to your `composer.json`
 
 ## Config
 There are just few things to set in [Scheduler.php](https://github.com/peppeocchi/php-cron-scheduler/blob/master/src/GO/Scheduler.php)
-- For some job you can specify a custom the path to the interpreter
-  ```php
-  $scheduler->php('path/to/my/command')->useBin('path/to/my/php/bin')
-  ```
-  default is `PHP_BINARY`, or `/usr/bin/php` if that constant is empty
+- For some job you can specify a custom the path to the interpreter (default is `PHP_BINARY`, or `/usr/bin/php` if that var is empty)
+```php
+$scheduler->php('path/to/my/command')->useBin('path/to/my/php/bin')
+```
 
 ## How it works
 Instead of adding a new entry in the crontab for each cronjob you have to run, you can add only one cron job to your crontab and define the commands in your .php file.
 
-By default when you schedule a command it will run in background, you can overwrite that behavior by calling `->runInForeground()` method (eg. `$scheduler->call('myFunction')->runInForeground()->every()->minute()`).
+By default when you schedule a command it will run in background, you can overwrite that behavior by calling `->runInForeground()` method.
+```php
+$scheduler->call('myFunction')->runInForeground()->every()->minute();
+```
 
 **Jobs that should send the output to email/s are always set to run in foreground**
 
@@ -106,7 +108,10 @@ The jobs that are due to run are being ordered by their execution: jobs that can
 
 ### Job types
 After creating a new `Scheduler` instance, you can add few type of jobs
-- `->php('myCommand')`, execute a `PHP` job (you can set your own `PHP_BINARY` by calling `$scheduler->php('myCommand')->useBin('myBin')`)
+- `->php('myCommand')`, execute a `PHP` job. If you need you can set your own `PHP_BINARY`
+```php
+$scheduler->php('myCommand')->useBin('myBin')
+```
 - `->raw('myCommand')`, execute a raw command in the shell, you can use this type if you want to pipe several commands like `ps aux | grep memcached`
 - `->call('myFunction')`, execute your own function
 - you can optionally write your own interpreter (if you want you can do a PR to add the interpreter to this repo), just extend `GO\Job\Job` and define the `build()` method, and an optional `init()` if it requires to be initiated before running the command - eg. to define a bin path
