@@ -96,16 +96,18 @@ Then add to your crontab
 
 And you are ready to go.
 
-### Supported job types
+### Job types
 After creating a new `Scheduler` instance, you can add few type of jobs
 - `php('myCommand')`, execute a `PHP` job (you can set your own `PHP_BINARY` by calling `$scheduler->php('myCommand')->useBin('myBin')`)
 - `raw('myCommand')`, execute a raw command in the shell, you can use this type if you want to pipe several commands like `ps aux | grep memcached`
 - `call('myFunction')`, execute your own function
 - you can optionally write your own interpreter (if you want you can do a PR to add the interpreter to this repo), just extend `GO\Job\Job` and define the `build()` method, and an optional `init()` if it requires to be initiated before running the command - eg. to define a bin path
 
-### Time format
+### Schedule time
 `Scheduler` uses `Cron\CronExpression` as an expression parser.
+
 So you can schedule the job using the `->at('myCronExpression')` method and passing to that your cron expression (eg. `* * * * *`) or one of the expression supported by [mtdowling/cron-expression](https://github.com/mtdowling/cron-expression)
+
 Optionally you can use the "pretty scheduling" that lets you define times in an eloquent way. To do that you should call the `->every()` followed by
 - `->minute()`, the job will be scheduled to run every minute
 - `->hour('02')` the job will be scheduled to run every hour. Default `minute` is `00` but you can override that with your own `minute` (in the example it will run every hour at minute `02`)
