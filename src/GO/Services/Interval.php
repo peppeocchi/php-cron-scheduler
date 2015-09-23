@@ -33,12 +33,6 @@ class Interval
     $this->interval = is_int($interval) ? '*/'.$interval : $interval;
   }
 
-  // Removed
-  private function second()
-  {
-    return $this->job->at('* * * * *');
-  }
-
   /**
    * Execute job every $interval minute
    *
