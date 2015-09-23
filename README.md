@@ -32,7 +32,8 @@ There are just few things to set in [Scheduler.php](https://github.com/peppeocch
 ## How it works
 Instead of adding a new entry in the crontab for each cronjob you have to run, you can add only one cron job to your crontab and define the commands in your .php file.
 
-By default when you schedule a command it will run in background, you can overwrite that behavior by calling `->runInForeground()` method.
+By default when you schedule a command it will run in background, you can overwrite that behavior by calling `->runInForeground()` method (eg. `$scheduler->call('myFunction')->runInForeground()->every()->minute()`).
+
 **Jobs that should send the output to email/s are always set to run in foreground**
 
 Create your `scheduler.php` file like this
