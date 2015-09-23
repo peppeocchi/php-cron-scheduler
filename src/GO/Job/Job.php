@@ -68,11 +68,11 @@ abstract class Job
   private $emailFrom = ['cronjob@server.my' => 'My Email Server'];
 
   /**
-   * Bool that define if the command is due
+   * Instance of
    *
-   * @var bool
+   * @var Cron\CronExpression
    */
-  public $due = false;
+  public $execution;
 
   /**
    * Bool that defines if the command has run in backgroud
@@ -115,11 +115,7 @@ abstract class Job
    */
   public function at($expression)
   {
-    $execution = CronExpression::factory($expression);
-
-    if ($execution->isDue()) {
-      $this->due = true;
-    }
+    $this->execution = CronExpression::factory($expression);
 
     return $this;
   }
@@ -173,7 +169,7 @@ abstract class Job
    */
   public function isDue()
   {
-    return $this->due;
+    return $this->execution->isDue();
   }
 
   /**
@@ -268,5 +264,17 @@ abstract class Job
   public function runInForeground()
   {
     $this->runInBackground = false;
+  }
+
+  /**
+   * Injected config from the scheduler
+   *
+   * @return void
+   */
+  public function setup(array $config)
+  {
+    if (isset($config['emailFrom'])) {
+      $this->emailFrom = $config['emailFrom'];
+    }
   }
 }

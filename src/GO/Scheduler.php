@@ -32,16 +32,23 @@ class Scheduler
    */
   private $time;
 
+  /**
+   * Global config for the jobs
+   *
+   * @var array
+   */
+  private $config;
+
 
   /**
-   * Create a new Scheduler instance and init the datetime
+   * Create a new Scheduler instance and keep optional jobs config
    *
+   * @param array $config
    * @return void
    */
-  public function __construct()
+  public function __construct(array $config = [])
   {
-    $this->dt = DateTime::get();
-    $this->dt->setTimezone($this->timezone);
+    $this->config = $config;
 
     $this->time = time();
   }
@@ -54,7 +61,7 @@ class Scheduler
    */
   public function setTimezone($timezone)
   {
-    $this->dt->setTimezone($timezone);
+    $this->config['timezone'] = $timezone;
   }
 
   /**
@@ -91,7 +98,7 @@ class Scheduler
    * @param array $args
    * @return instance of GO\Job\Job
    */
-  public function command($command, array $args = [])
+  private function command($command, array $args = [])
   {
     $file = basename($command);
   }
@@ -145,6 +152,7 @@ class Scheduler
     $this->jobsInBackgroundFirst();
 
     foreach ($this->jobs as $job) {
+      $job->setup($this->config);
       if ($job->isDue()) {
         $output[] = $job->exec();
       }
