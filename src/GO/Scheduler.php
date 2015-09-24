@@ -13,11 +13,6 @@ class Scheduler
   private $timezone = 'Europe/Dublin';
 
   /**
-   * Where to send the output of the job
-   */
-  private $output = '/dev/null';
-
-  /**
    * The scheduled jobs
    *
    * @var array of GO\Job\Job
