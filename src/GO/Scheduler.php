@@ -1,7 +1,6 @@
 <?php namespace GO;
 
 use GO\Job\JobFactory;
-use GO\Services\DateTime;
 
 class Scheduler
 {
