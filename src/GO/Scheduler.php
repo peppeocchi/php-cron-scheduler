@@ -42,9 +42,20 @@ class Scheduler
    */
   public function __construct(array $config = [])
   {
-    $this->config = $config;
+    $this->useConfig($config);
 
     $this->time = time();
+  }
+
+  /**
+   * Switch between configurations
+   *
+   * @param array $config
+   * @return void
+   */
+  public function useConfig(array $config)
+  {
+    $this->config = $config;
   }
 
   /**

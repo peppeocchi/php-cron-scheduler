@@ -95,6 +95,40 @@ Then add to your crontab
 
 And you are ready to go.
 
+### Config
+You can pass to the Scheduler constructor an array with your global config for the jobs
+
+The only supported configuration until now is the sender email address when sending the result of a job execution
+
+```php
+...
+$config = [
+  'emailFrom' => 'myEmail@address.com'
+];
+
+$scheduler = new Scheduler($config);
+...
+```
+
+You can also switch configuration on a per job basis or for a group of jobs
+
+```php
+...
+$config1 = [...];
+$config2 = [...];
+$scheduler = new Scheduler();
+
+$scheduler->useConfig($config1)->php(...)....
+
+$scheduler->useConfig($config2);
+
+$scheduler->raw(...)....
+$scheduler->call(...)....
+
+$scheduler->useConfig($config1);
+...
+```
+
 ### Jobs execution order
 The jobs that are due to run are being ordered by their execution: jobs that can run in **background** will be executed **first**
 
