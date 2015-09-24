@@ -51,11 +51,13 @@ class Scheduler
    * Switch between configurations
    *
    * @param array $config
-   * @return void
+   * @return $this
    */
   public function useConfig(array $config)
   {
     $this->config = $config;
+
+    return $this;
   }
 
   /**
