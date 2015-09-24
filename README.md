@@ -21,13 +21,6 @@ or add the package to your `composer.json`
 }
 ```
 
-## Config
-There are just few things to set in [Scheduler.php](https://github.com/peppeocchi/php-cron-scheduler/blob/master/src/GO/Scheduler.php)
-- For some job you can specify a custom the path to the interpreter (default is `PHP_BINARY`, or `/usr/bin/php` if that var is empty)
-```php
-$scheduler->php('path/to/my/command')->useBin('path/to/my/php/bin')
-```
-
 ## How it works
 Instead of adding a new entry in the crontab for each cronjob you have to run, you can add only one cron job to your crontab and define the commands in your .php file.
 
