@@ -65,19 +65,6 @@ class Scheduler
   }
 
   /**
-   * Set where to send the output
-   *
-   * @param string $output - path file or folder, if a folder is specified,
-   *                           in that folder will be created several files,
-   *                           one for each scheduled command
-   * @return void
-   */
-  public function setOutput($output)
-  {
-    $this->output = $output;
-  }
-
-  /**
    * PHP job
    *
    * @param string $command
