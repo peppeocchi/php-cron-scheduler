@@ -35,23 +35,32 @@ $scheduler->call('myFunction')->runInForeground()->every()->minute();
 
 Create your `scheduler.php` file like this
 ```php
-<?php require_once __DIR__ . '/../vendor/autoload.php';
-
+<?php require_once __DIR__.'/../vendor/autoload.php';
 
 use GO\Scheduler;
 
+function myFunc() {
+  return "Hello world from function!";
+}
 
-$scheduler = new Scheduler();
+$scheduler = new Scheduler([
+  'emailFrom' => 'myemail@address.from'
+]);
 
 
 /**
  * Schedule cronjob.php to run every minute
  *
  */
-$scheduler->php(__DIR__.'/cronjob.php')
-  ->at('* * * * *')
-  ->output(__DIR__.'/cronjob.log')
-  ->email('myemail@server.net');
+$scheduler->php(__DIR__.'/cronjob.php')->at('* * * * *')->output(__DIR__.'/cronjob.log');
+
+
+/**
+ * Schedule a php job to run with your bin
+ *
+ */
+$scheduler->php(__DIR__.'/cronjob.php')->useBin('/usr/bin/php')->at('* * * * *')->output(__DIR__.'/cronjob_bin.log', true);
+
 
 /**
  * Schedule a raw command to tun every minute between 00 and 04 of every hour,
@@ -59,32 +68,36 @@ $scheduler->php(__DIR__.'/cronjob.php')
  * Pass `true` as a second parameter to append the output to that file
  *
  */
-$scheduler->raw('echo "I am a raw command!"')
-  ->at('* * * * *')
-  ->output(__DIR__.'/raw.log', true);
+$scheduler->raw('ps aux | grep httpd')->at('* * * * *')->output(__DIR__.'/raw.log', true);
+
 
 /**
  * Run your own function every day at 10:30
  *
  */
+$scheduler->call('myFunc')->every()->day('10:30')->output(__DIR__.'/call.log');
+
 $scheduler->call(function () {
-    return 'I am a function!';
-  })
-  ->every()->day('10:30')
-  ->output([
-    __DIR__.'/callable1.log',
-    __DIR__.'/callable2.log',
-  ]);
+    return "This works the same way";
+  })->at('* * * * *')->output(__DIR__.'/call.log');
 
 /**
- * Pretty scheduling - run every 25th of month at 00:13
+ * Run only when your func returns true
  *
  */
-$scheduler->php(__DIR__.'/../tests/cronjob.php')
-  ->every()
-  ->month('25 00:13')
-  ->email(['dev1@server.net' => 'Dev 1', 'dev2@mail.com' => 'Dev 2']);
+$scheduler->php(__DIR__.'/cronjob.php')
+  ->at('* * * * *')
+  ->when(function () {
+    return false;
+  })->output(__DIR__.'/never_created.log');
 
+/**
+ * Send the output to an email address
+ *
+ */
+$scheduler->call(function () {
+    return "This will be sent via email";
+  })->at('* * * * *')->output(__DIR__.'/call.log')->email('myemail@address.to');
 
 $scheduler->run();
 ```
@@ -112,25 +125,6 @@ $scheduler = new Scheduler($config);
 ...
 ```
 
-You can also switch configuration on a per job basis or for a group of jobs
-
-```php
-...
-$config1 = [...];
-$config2 = [...];
-$scheduler = new Scheduler();
-
-$scheduler->useConfig($config1)->php(...)....
-
-$scheduler->useConfig($config2);
-
-$scheduler->raw(...)....
-$scheduler->call(...)....
-
-$scheduler->useConfig($config1);
-...
-```
-
 ### Jobs execution order
 The jobs that are due to run are being ordered by their execution: jobs that can run in **background** will be executed **first**
 
@@ -144,6 +138,24 @@ $scheduler->php('myCommand')->useBin('myBin')
 - `->raw('myCommand')`, execute a raw command in the shell, you can use this type if you want to pipe several commands like `ps aux | grep memcached`
 - `->call('myFunction')`, execute your own function
 - you can optionally write your own interpreter (if you want you can do a PR to add the interpreter to this repo), just extend `GO\Job\Job` and define the `build()` method, and an optional `init()` if it requires to be initiated before running the command - eg. to define a bin path
+
+### Output
+You can send the output of the execution of your cron job either to a file and an email address.
+- `->output('myfile')` will overwrite that file if exists
+- `->output('myfile', true)` will append to that file (if exists)
+If you want to send the output to an email address, you need to send first the output to a file. That file will be attached to the email
+- `->output('myfile')->email('myemail')`
+You can pass an array of files or emails if you want to send the output to multiple files/emails
+-> `output(['first_file', 'second_file'])->email(['myemail1' => 'Dev1', 'myemail2' => 'Dev2'])`
+
+### Conditional
+You can delegate the execution of a cronjob to a truthful test.
+```
+$scheduler->raw('command')->when(function () {
+    .....
+    return true;
+  });
+```
 
 ### Schedule time
 `Scheduler` uses `Cron\CronExpression` as an expression parser.
