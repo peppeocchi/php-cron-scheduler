@@ -4,8 +4,14 @@ use GO\Job\Job;
 
 class Closure extends Job
 {
-  protected function build()
+  public function build()
   {
-    return $this->compiled = $this->command;
+    return $this->compile($this->command);
+  }
+
+  protected function compile($command)
+  {
+    $this->runInForeground();
+    return $command;
   }
 }

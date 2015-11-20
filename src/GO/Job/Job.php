@@ -40,13 +40,6 @@ abstract class Job
   protected $time;
 
   /**
-   * Filesystem manager
-   *
-   * @var GO\Services\Filesystem
-   */
-  private $fs;
-
-  /**
    * The files where the output has to be sent
    *
    * @var array
@@ -75,11 +68,18 @@ abstract class Job
   public $execution;
 
   /**
-   * Bool that defines if the command has run in backgroud
+   * Bool that defines if the command has to run in backgroud
    *
    * @var bool
    */
   public $runInBackground = true;
+
+  /**
+   * Bool that defines if the command passed the truth test
+   *
+   * @var bool
+   */
+  public $truthTest = true;
 
 
   /**
@@ -93,18 +93,35 @@ abstract class Job
   {
     $this->time = time();
 
-    // if (is_callable($job)) {
-      $this->command = $job;
-    // } else {
-      // $this->fs = new Filesystem($job);
-      // $this->command = $this->fs->getCommand();
-    // }
+    $this->command = $job;
 
     $this->args = $args;
 
     if (method_exists($this, 'init')) {
       $this->init();
     }
+
+    $this->compiled = $this->build();
+  }
+
+  /**
+   * Get command
+   *
+   * @return array
+   */
+  public function getCommand()
+  {
+    return $this->compiled;
+  }
+
+  /**
+   * Get args
+   *
+   * @return array
+   */
+  public function getArgs()
+  {
+    return $this->args;
   }
 
   /**
@@ -148,6 +165,16 @@ abstract class Job
   }
 
   /**
+   * Get files output
+   *
+   * @return array
+   */
+  public function getFilesOutput()
+  {
+    return $this->outputs;
+  }
+
+  /**
    * Define the email address/es where to send the output of the job
    *
    * @param string/array $email
@@ -163,20 +190,30 @@ abstract class Job
   }
 
   /**
+   * Get emails output
+   *
+   * @return array
+   */
+  public function getEmailsOutput()
+  {
+    return $this->emails;
+  }
+
+  /**
    * Check if the job is due to run
    *
    * @return bool
    */
   public function isDue()
   {
-    return $this->execution->isDue();
+    return $this->execution->isDue() && $this->truthTest === true;
   }
 
   /**
    * Abstract function build and compile the command
    *
    */
-  abstract protected function build();
+  abstract public function build();
 
   /**
    * Compile command - finalize with output redirections
@@ -188,7 +225,7 @@ abstract class Job
   {
     if (count($this->args) > 0) {
       foreach ($this->args as $key => $value) {
-        $command .= ' ' . $key . ' ' . $value;
+        $command .= " {$key} \"{$value}\"";
       }
     }
 
@@ -200,7 +237,7 @@ abstract class Job
       }
     }
 
-    $command .= '> /dev/null 2>&1';
+    $command .= ' > /dev/null 2>&1';
     if ($this->runInBackground === true) {
       $command .= ' &';
     }
@@ -215,7 +252,7 @@ abstract class Job
    */
   public function exec()
   {
-    $compiled = $this->build();
+    $this->compiled = $this->build();
     if (is_callable($this->compiled)) {
       $return = call_user_func($this->command, $this->args);
       foreach ($this->outputs as $output) {
@@ -276,5 +313,20 @@ abstract class Job
     if (isset($config['emailFrom'])) {
       $this->emailFrom = $config['emailFrom'];
     }
+  }
+
+  /**
+   * Delegate execution to truth test if it's due
+   *
+   * @return void
+   */
+  public function when($test)
+  {
+    if (!is_callable($test)) {
+      throw new \Exception('InvalidArgumentException');
+    }
+    $this->truthTest = $test();
+
+    return $this;
   }
 }

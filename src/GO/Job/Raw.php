@@ -4,7 +4,7 @@ use GO\Job\Job;
 
 class Raw extends Job
 {
-  protected function build()
+  public function build()
   {
     return $this->compile(trim($this->command));
   }

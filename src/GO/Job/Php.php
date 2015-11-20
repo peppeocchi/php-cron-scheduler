@@ -23,11 +23,21 @@ class Php extends Job
   }
 
   /**
+   * Get bin
+   *
+   * @return void
+   */
+  public function getBin()
+  {
+    return $this->phpbin;
+  }
+
+  /**
    * Build the command
    *
    * @return void
    */
-  protected function build()
+  public function build()
   {
     $command = $this->phpbin . ' ' . $this->command;
 

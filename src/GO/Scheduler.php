@@ -20,6 +20,13 @@ class Scheduler
   private $jobs = [];
 
   /**
+   * The executed jobs
+   *
+   * @var array of GO\Job\Job
+   */
+  private $executed = [];
+
+  /**
    * The scheduler start time
    *
    * @var int
@@ -61,6 +68,36 @@ class Scheduler
   }
 
   /**
+   * Get current configuration
+   *
+   * @return array
+   */
+  public function getConfig()
+  {
+    return $this->config;
+  }
+
+  /**
+   * Get jobs
+   *
+   * @return array
+   */
+  public function getJobs()
+  {
+    return $this->jobs;
+  }
+
+  /**
+   * Get executed jobs
+   *
+   * @return array
+   */
+  public function getExecutedJobs()
+  {
+    return $this->executed;
+  }
+
+  /**
    * Set the timezone
    *
    * @param string $timezone
@@ -80,7 +117,7 @@ class Scheduler
    */
   public function php($command, array $args = [])
   {
-    return $this->jobs[] = JobFactory::factory('GO\Job\Php', $command, $args);
+    return $this->jobs[] = JobFactory::factory(\GO\Job\Php::class, $command, $args);
   }
 
   /**
@@ -105,7 +142,18 @@ class Scheduler
    */
   public function raw($command)
   {
-    return $this->jobs[] = JobFactory::factory('GO\Job\Raw', $command);
+    return $this->jobs[] = JobFactory::factory(\GO\Job\Raw::class, $command);
+  }
+
+  /**
+   * Ping url
+   *
+   * @param string $url
+   * @return instance of GO\Job\Job
+   */
+  public function ping($command)
+  {
+    return $this->jobs[] = JobFactory::factory(\GO\Job\Ping::class, $command);
   }
 
   /**
@@ -116,7 +164,7 @@ class Scheduler
    */
   public function call($closure)
   {
-    return $this->jobs[] = JobFactory::factory('GO\Job\Closure', $closure);
+    return $this->jobs[] = JobFactory::factory(\GO\Job\Closure::class, $closure);
   }
 
   /**
@@ -149,6 +197,7 @@ class Scheduler
       $job->setup($this->config);
       if ($job->isDue()) {
         $output[] = $job->exec();
+        $this->executed[] = $job;
       }
     }
 
