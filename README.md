@@ -19,7 +19,7 @@ or add the package to your `composer.json`
 ```json
 {
     "require": {
-        "peppeocchi/php-cron-scheduler": "dev-master"
+        "peppeocchi/php-cron-scheduler": "1.*"
     }
 }
 ```
