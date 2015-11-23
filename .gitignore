@@ -1,4 +1,5 @@
 /vendor
 composer.lock
 .DS_Store
-/tests
+/examples
+*.old

@@ -1,7 +1,6 @@
 <?php namespace GO;
 
 use GO\Job\JobFactory;
-use GO\Services\DateTime;
 
 class Scheduler
 {
@@ -14,16 +13,18 @@ class Scheduler
   private $timezone = 'Europe/Dublin';
 
   /**
-   * Where to send the output of the job
-   */
-  private $output = '/dev/null';
-
-  /**
    * The scheduled jobs
    *
    * @var array of GO\Job\Job
    */
   private $jobs = [];
+
+  /**
+   * The executed jobs
+   *
+   * @var array of GO\Job\Job
+   */
+  private $executed = [];
 
   /**
    * The scheduler start time
@@ -32,18 +33,68 @@ class Scheduler
    */
   private $time;
 
+  /**
+   * Global config for the jobs
+   *
+   * @var array
+   */
+  private $config;
+
 
   /**
-   * Create a new Scheduler instance and init the datetime
+   * Create a new Scheduler instance and keep optional jobs config
    *
+   * @param array $config
    * @return void
    */
-  public function __construct()
+  public function __construct(array $config = [])
   {
-    $this->dt = DateTime::get();
-    $this->dt->setTimezone($this->timezone);
+    $this->useConfig($config);
 
     $this->time = time();
+  }
+
+  /**
+   * Switch between configurations
+   *
+   * @param array $config
+   * @return $this
+   */
+  public function useConfig(array $config)
+  {
+    $this->config = $config;
+
+    return $this;
+  }
+
+  /**
+   * Get current configuration
+   *
+   * @return array
+   */
+  public function getConfig()
+  {
+    return $this->config;
+  }
+
+  /**
+   * Get jobs
+   *
+   * @return array
+   */
+  public function getJobs()
+  {
+    return $this->jobs;
+  }
+
+  /**
+   * Get executed jobs
+   *
+   * @return array
+   */
+  public function getExecutedJobs()
+  {
+    return $this->executed;
   }
 
   /**
@@ -54,20 +105,7 @@ class Scheduler
    */
   public function setTimezone($timezone)
   {
-    $this->dt->setTimezone($timezone);
-  }
-
-  /**
-   * Set where to send the output
-   *
-   * @param string $output - path file or folder, if a folder is specified,
-   *                           in that folder will be created several files,
-   *                           one for each scheduled command
-   * @return void
-   */
-  public function setOutput($output)
-  {
-    $this->output = $output;
+    $this->config['timezone'] = $timezone;
   }
 
   /**
@@ -79,7 +117,7 @@ class Scheduler
    */
   public function php($command, array $args = [])
   {
-    return $this->jobs[] = JobFactory::factory('GO\Job\Php', $command, $args);
+    return $this->jobs[] = JobFactory::factory(\GO\Job\Php::class, $command, $args);
   }
 
   /**
@@ -91,7 +129,7 @@ class Scheduler
    * @param array $args
    * @return instance of GO\Job\Job
    */
-  public function command($command, array $args = [])
+  private function command($command, array $args = [])
   {
     $file = basename($command);
   }
@@ -104,7 +142,18 @@ class Scheduler
    */
   public function raw($command)
   {
-    return $this->jobs[] = JobFactory::factory('GO\Job\Raw', $command);
+    return $this->jobs[] = JobFactory::factory(\GO\Job\Raw::class, $command);
+  }
+
+  /**
+   * Ping url
+   *
+   * @param string $url
+   * @return instance of GO\Job\Job
+   */
+  public function ping($command)
+  {
+    return $this->jobs[] = JobFactory::factory(\GO\Job\Ping::class, $command);
   }
 
   /**
@@ -115,7 +164,21 @@ class Scheduler
    */
   public function call($closure)
   {
-    return $this->jobs[] = JobFactory::factory('GO\Job\Closure', $closure);
+    return $this->jobs[] = JobFactory::factory(\GO\Job\Closure::class, $closure);
+  }
+
+  /**
+   * Move the jobs that can run in background on top of the array
+   * This is done to avoid blocking jobs that can slow down the
+   * execution of other jobs
+   *
+   * @return void
+   */
+  public function jobsInBackgroundFirst()
+  {
+    usort($this->jobs, function ($a, $b) {
+      return $b->runInBackground - $a->runInBackground;
+    });
   }
 
   /**
@@ -127,9 +190,14 @@ class Scheduler
   {
     $output = [];
 
+    // First reorder the cronjobs
+    $this->jobsInBackgroundFirst();
+
     foreach ($this->jobs as $job) {
+      $job->setup($this->config);
       if ($job->isDue()) {
         $output[] = $job->exec();
+        $this->executed[] = $job;
       }
     }
 

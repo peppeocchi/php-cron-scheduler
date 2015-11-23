@@ -6,37 +6,50 @@ class Php extends Job
 {
   /**
    * PHP binary
+   *
+   * @var string
    */
   private $phpbin;
 
+  /**
+   * Child constructor
+   * Sets the PHP binary
+   *
+   * @return void
+   */
   protected function init()
   {
     $this->phpbin = PHP_BINARY === '' ? '/usr/bin/php' : PHP_BINARY;
   }
 
-  protected function build()
+  /**
+   * Get bin
+   *
+   * @return void
+   */
+  public function getBin()
+  {
+    return $this->phpbin;
+  }
+
+  /**
+   * Build the command
+   *
+   * @return void
+   */
+  public function build()
   {
     $command = $this->phpbin . ' ' . $this->command;
 
-    if (count($this->args)) {
-      foreach ($this->args as $key => $value) {
-        $command .= ' ' . $key . ' ' . $value;
-      }
-    }
-
-    if (count($this->outputs) > 0) {
-      $command .= ' | tee ';
-      $command .= $this->mode === 'a' ? '-a ' : '';
-      foreach ($this->outputs as $o) {
-        $command .= $o.' ';
-      }
-    }
-
-    $command .= '> /dev/null 2>&1 &';
-
-    return $this->compiled = trim($command);
+    return $this->compile($command);
   }
 
+  /**
+   * Change PHP binary path
+   *
+   * @param string $bin
+   * @return $this
+   */
   public function useBin($bin)
   {
     $this->phpbin = file_exists($bin) ? $bin : $this->phpbin;
