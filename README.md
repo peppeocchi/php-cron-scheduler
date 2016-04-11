@@ -150,7 +150,7 @@ You can pass an array of files or emails if you want to send the output to multi
 -> `output(['first_file', 'second_file'])->email(['myemail1' => 'Dev1', 'myemail2' => 'Dev2'])`
 
 ### Advanced logging
-Additionally to the file or email output, you can use a Psr\Log compatible Logger (e.g. Monolog) to handle the job output.
+Additionally to the file or email output, you can use a PSR-3 compatible Logger (e.g. Monolog) to handle the job output.
 
 ```php
 <?php
