@@ -149,6 +149,31 @@ If you want to send the output to an email address, you need to send first the o
 You can pass an array of files or emails if you want to send the output to multiple files/emails
 -> `output(['first_file', 'second_file'])->email(['myemail1' => 'Dev1', 'myemail2' => 'Dev2'])`
 
+### Logger
+Additionally to the file or email output, you can use a Psr\Log compatible Logger (e.g. Monolog) to handle the job output.
+
+```php
+<?php
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use GO\Scheduler;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+$log = new Logger('logger-name');
+$log->pushHandler(new StreamHandler('/tmp/log.log', Logger::INFO));
+
+$scheduler
+    ->call(function () {
+        return "just output something";
+    })
+    ->at('* * * * *')
+    ->setLogger($log);
+
+$scheduler->run();
+```
+
 ### Conditional
 You can delegate the execution of a cronjob to a truthful test.
 ```
