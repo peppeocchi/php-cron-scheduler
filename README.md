@@ -149,7 +149,7 @@ If you want to send the output to an email address, you need to send first the o
 You can pass an array of files or emails if you want to send the output to multiple files/emails
 -> `output(['first_file', 'second_file'])->email(['myemail1' => 'Dev1', 'myemail2' => 'Dev2'])`
 
-### Logger
+### Advanced logging
 Additionally to the file or email output, you can use a Psr\Log compatible Logger (e.g. Monolog) to handle the job output.
 
 ```php
@@ -173,6 +173,12 @@ $scheduler
 
 $scheduler->run();
 ```
+
+The Scheduler will use the INFO level for logging the output.
+
+#### More logging options
+- `->setLabel('my-log-label')` will log the job output using this label
+- `->setJobDoneMessage('job xyz done!')` will add an additional message that will be logged when the job is done. This can be useful if you want to track that a job is executed, even though it does not output anything by itself.  
 
 ### Conditional
 You can delegate the execution of a cronjob to a truthful test.
