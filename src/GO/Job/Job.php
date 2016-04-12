@@ -4,12 +4,14 @@ use GO\Services\Filesystem;
 use GO\Services\Interval;
 
 use Cron\CronExpression;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 use Swift_Attachment;
 use Swift_Mailer;
 use Swift_MailTransport;
 use Swift_Message;
 
-abstract class Job
+abstract class Job implements LoggerAwareInterface
 {
   /**
    * The command
@@ -80,7 +82,24 @@ abstract class Job
    * @var bool
    */
   public $truthTest = true;
+  
+  /**
+   * PSR-3 compliant logger
+   * @var \Psr\Log\LoggerInterface
+   */
+  private $logger;
 
+  /**
+   * Label for the job, to make it easier to identify in the logs
+   * @var string
+   */
+  private $jobLabel;
+
+  /**
+   * Optional message that will be added to the
+   * @var string
+   */
+  private $jobDoneMessage;
 
   /**
    * Create a new instance of Job
@@ -237,7 +256,11 @@ abstract class Job
       }
     }
 
-    $command .= ' > /dev/null 2>&1';
+    // Only hide output if no loggers are used
+    if (!$this->logger) {
+      $command .= ' > /dev/null 2>&1';
+    }
+
     if ($this->runInBackground === true) {
       $command .= ' &';
     }
@@ -252,15 +275,22 @@ abstract class Job
    */
   public function exec()
   {
+    $jobOutput = [];
     $this->compiled = $this->build();
     if (is_callable($this->compiled)) {
       $return = call_user_func($this->command, $this->args);
       foreach ($this->outputs as $output) {
         Filesystem::write($return, $output, $this->mode);
       }
+
+      if (is_string($return)) {
+        $jobOutput[] = $return;
+      }
     } else {
-      $return = exec($this->compiled);
+      $return = exec($this->compiled, $jobOutput);
     }
+
+    $this->logJobOutput($jobOutput);
 
     if ($this->emails) {
       $this->sendEmails();
@@ -328,5 +358,74 @@ abstract class Job
     $this->truthTest = $test();
 
     return $this;
+  }
+
+  /**
+   * Attach a PSR-3 compliant logger to this job
+   *
+   * @param \Psr\Log\LoggerInterface $logger
+   *
+   * @return $this
+   */
+  public function setLogger(LoggerInterface $logger)
+  {
+    $this->logger = $logger;
+
+    return $this;
+  }
+
+  /**
+   * Define a label for this job, which is used by the logger
+   *
+   * @param string $label
+   *
+   * @return $this
+   */
+  public function setLabel($label)
+  {
+    $this->jobLabel = $label;
+
+    return $this;
+  }
+
+  /**
+   * Define a message that will be logged after the job has run
+   *
+   * @param string $message
+   *
+   * @return $this
+   */
+  public function setJobDoneMessage($message)
+  {
+    $this->jobDoneMessage = $message;
+
+    return $this;
+  }
+
+  /**
+   * Get the log label for this job
+   * @return string
+   */
+  protected function getLogLabel()
+  {
+    return (!empty($this->jobLabel)) ? $this->jobLabel : '';
+  }
+
+  /**
+   * Log output, if there is anything to log
+   *
+   * @param array $jobOutput
+   *
+   * @return void
+   */
+  protected function logJobOutput($jobOutput)
+  {
+    if (count($jobOutput) > 0) {
+      $this->logger->info($this->getLogLabel(), $jobOutput);
+    }
+
+    if ($this->jobDoneMessage !== null) {
+      $this->logger->info($this->getLogLabel(), [ $this->jobDoneMessage ]);
+    }
   }
 }

@@ -7,13 +7,20 @@
         {
             "name": "Giuseppe Occhipinti",
             "email": "peppeocchi@gmail.com"
+        },
+        {
+            "name": "Carsten Windler",
+            "email": "carsten@carstenwindler.de",
+            "homepage": "http://carstenwindler.de",
+            "role": "Contributor"
         }
     ],
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.5.9",
         "mtdowling/cron-expression": "@stable",
-        "swiftmailer/swiftmailer": "@stable"
+        "swiftmailer/swiftmailer": "@stable",
+        "psr/log": "~1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "5.0.*"
