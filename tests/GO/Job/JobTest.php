@@ -84,4 +84,30 @@ class JobTest extends \PHPUnit_Framework_TestCase
 
     $this->assertFalse($job->isDue());
   }
+
+  /**
+   * @expectedException TypeError
+   */
+  public function testShouldAcceptOnlyCallbackWithDoNotOverlap()
+  {
+    $job = JobFactory::factory('GO\Job\Php', 'some command')->at('* * * * *')->doNotOverlap([1,2]);
+  }
+
+  public function testShouldSetCallbackWithDoNotOverlap()
+  {
+    $job = JobFactory::factory('GO\Job\Php', 'some command')->at('* * * * *')
+      ->doNotOverlap(function ($lastExec) {
+        return $lastExec < 1000;
+      });
+
+    $this->assertTrue($job->preventOverlap() !== false && $job->preventOverlap() instanceof \Closure);
+  }
+
+  public function testShouldSetTrueIfNoCallbackProvidedWithDoNotOverlap()
+  {
+    $job = JobFactory::factory('GO\Job\Php', 'some command')->at('* * * * *')
+      ->doNotOverlap();
+
+    $this->assertTrue($job->preventOverlap());
+  }
 }

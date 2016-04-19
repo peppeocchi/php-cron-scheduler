@@ -42,6 +42,13 @@ abstract class Job implements LoggerAwareInterface
   protected $time;
 
   /**
+   * The overlap flag. It could contain a callback.
+   *
+   * @var true|Closure
+   */
+  protected $overlap = false;
+
+  /**
    * The files where the output has to be sent
    *
    * @var array
@@ -82,7 +89,7 @@ abstract class Job implements LoggerAwareInterface
    * @var bool
    */
   public $truthTest = true;
-  
+
   /**
    * PSR-3 compliant logger
    * @var \Psr\Log\LoggerInterface
@@ -102,6 +109,12 @@ abstract class Job implements LoggerAwareInterface
   private $jobDoneMessage;
 
   /**
+   * Path to lock file.
+   * @var string
+   */
+  private $lockFile;
+
+  /**
    * Create a new instance of Job
    *
    * @param mixed $job
@@ -119,8 +132,6 @@ abstract class Job implements LoggerAwareInterface
     if (method_exists($this, 'init')) {
       $this->init();
     }
-
-    $this->compiled = $this->build();
   }
 
   /**
@@ -129,6 +140,16 @@ abstract class Job implements LoggerAwareInterface
    * @return array
    */
   public function getCommand()
+  {
+    return $this->command;
+  }
+
+  /**
+   * Get compiled
+   *
+   * @return array
+   */
+  public function getCompiled()
   {
     return $this->compiled;
   }
@@ -141,6 +162,18 @@ abstract class Job implements LoggerAwareInterface
   public function getArgs()
   {
     return $this->args;
+  }
+
+  /**
+   * Assign an alias to the job
+   * This can be useful when having several cron jobs
+   * to check what is being executed on each run
+   *
+   * @return array
+   */
+  public function alias($alias)
+  {
+    return $this->commandAlias = $alias;
   }
 
   /**
@@ -235,7 +268,12 @@ abstract class Job implements LoggerAwareInterface
   abstract public function build();
 
   /**
-   * Compile command - finalize with output redirections
+   * Compile command
+   * - add arguments
+   * - redirect output to file
+   * - remove lock file
+   * - send output to logger
+   * - run in backgrou/foreground
    *
    * @param string $command
    * @return string
@@ -256,8 +294,14 @@ abstract class Job implements LoggerAwareInterface
       }
     }
 
+    /* If overlap is not false, then add the command to remove the lock
+       file after the execution */
+    if ($this->overlap !== false) {
+      $command .= '; rm ' . $this->lockFile;
+    }
+
     // Only hide output if no loggers are used
-    if (!$this->logger) {
+    if (! $this->logger) {
       $command .= ' > /dev/null 2>&1';
     }
 
@@ -269,6 +313,17 @@ abstract class Job implements LoggerAwareInterface
   }
 
   /**
+   * Set the lock file path to remove after the execution.
+   *
+   * @param string $file
+   * @return void
+   */
+  public function removeLockAfterExec($file)
+  {
+    $this->lockFile = $file;
+  }
+
+  /**
    * Execute the job
    *
    * @return string - The output of the executed job
@@ -277,6 +332,7 @@ abstract class Job implements LoggerAwareInterface
   {
     $jobOutput = [];
     $this->compiled = $this->build();
+
     if (is_callable($this->compiled)) {
       $return = call_user_func($this->command, $this->args);
       foreach ($this->outputs as $output) {
@@ -352,7 +408,7 @@ abstract class Job implements LoggerAwareInterface
    */
   public function when($test)
   {
-    if (!is_callable($test)) {
+    if (! is_callable($test)) {
       throw new \Exception('InvalidArgumentException');
     }
     $this->truthTest = $test();
@@ -408,7 +464,7 @@ abstract class Job implements LoggerAwareInterface
    */
   protected function getLogLabel()
   {
-    return (!empty($this->jobLabel)) ? $this->jobLabel : '';
+    return (! empty($this->jobLabel)) ? $this->jobLabel : '';
   }
 
   /**
@@ -420,6 +476,10 @@ abstract class Job implements LoggerAwareInterface
    */
   protected function logJobOutput($jobOutput)
   {
+    if (! $this->logger) {
+      return;
+    }
+
     if (count($jobOutput) > 0) {
       $this->logger->info($this->getLogLabel(), $jobOutput);
     }
@@ -427,5 +487,32 @@ abstract class Job implements LoggerAwareInterface
     if ($this->jobDoneMessage !== null) {
       $this->logger->info($this->getLogLabel(), [ $this->jobDoneMessage ]);
     }
+  }
+
+  /**
+   * Prevent the job from overlapping with a previous execution.
+   *
+   * @param Closure $callback
+   * @return $this
+   */
+  public function doNotOverlap(\Closure $callback = null)
+  {
+    if ($callback !== null) {
+      $this->overlap = $callback;
+    } else {
+      $this->overlap = true;
+    }
+
+    return $this;
+  }
+
+  /**
+   * Get the overlap value.
+   *
+   * @return bool|Closure
+   */
+  public function preventOverlap()
+  {
+    return $this->overlap;
   }
 }
