@@ -1,6 +1,9 @@
 <?php namespace GO;
 
+use InvalidArgumentException;
+
 use GO\Job\JobFactory;
+use GO\Services\Filesystem;
 
 class Scheduler
 {
@@ -42,20 +45,26 @@ class Scheduler
 
 
   /**
-   * Create a new Scheduler instance and keep optional jobs config
+   * Create a new Scheduler instance and keep optional jobs config.
    *
    * @param array $config
    * @return void
    */
   public function __construct(array $config = [])
   {
+    if (isset($config['tempDir']) &&
+        (! is_dir($config['tempDir']) || ! is_writable($config['tempDir']))
+    ) {
+      throw new InvalidArgumentException("{$config['tempDir']} does not exits or is not writable.");
+    }
+
     $this->useConfig($config);
 
     $this->time = time();
   }
 
   /**
-   * Switch between configurations
+   * Switch between configurations.
    *
    * @param array $config
    * @return $this
@@ -68,7 +77,7 @@ class Scheduler
   }
 
   /**
-   * Get current configuration
+   * Get current configuration.
    *
    * @return array
    */
@@ -78,7 +87,7 @@ class Scheduler
   }
 
   /**
-   * Get jobs
+   * Get jobs.
    *
    * @return array
    */
@@ -88,7 +97,7 @@ class Scheduler
   }
 
   /**
-   * Get executed jobs
+   * Get executed jobs.
    *
    * @return array
    */
@@ -98,7 +107,7 @@ class Scheduler
   }
 
   /**
-   * Set the timezone
+   * Set the timezone.
    *
    * @param string $timezone
    * @return void
@@ -109,7 +118,17 @@ class Scheduler
   }
 
   /**
-   * PHP job
+   * Get the directory for temporary files (job locks).
+   *
+   * @return string
+   */
+  public function getTempDir()
+  {
+    return isset($this->config['tempDir']) ? $this->config['tempDir'] : sys_get_temp_dir();
+  }
+
+  /**
+   * PHP job.
    *
    * @param string $command
    * @param array $args
@@ -153,6 +172,7 @@ class Scheduler
    */
   public function ping($command)
   {
+    return false;
     return $this->jobs[] = JobFactory::factory(\GO\Job\Ping::class, $command);
   }
 
@@ -195,13 +215,59 @@ class Scheduler
 
     foreach ($this->jobs as $job) {
       $job->setup($this->config);
+
+      // Check if job is due and if it should prevent overlapping
       if ($job->isDue()) {
+
+        if ($job->preventOverlap() !== false) {
+
+          // If overlapping, skip job execution
+          if (! $this->jobCanRun($job)) {
+            continue;
+          }
+
+          // Create lock file for this job to prevent overlap
+          $lockFile = implode('/', [$this->getTempDir(), md5($job->getCommand()) . '.lock']);
+          Filesystem::write('', $lockFile);
+          // Sets the file to remove after the execution
+          $job->removeLockAfterExec($lockFile);
+          // Sets the job to run in foreground
+          $job->runInForeground();
+        }
+
         $output[] = $job->exec();
         $this->executed[] = $job;
       }
     }
 
     return $output;
+  }
+
+  /**
+   * Check if the job is not overlapping.
+   * If overlapping and a callback has been provided,
+   * the result of that function will decide if the job can overlap.
+   *
+   * @param GO\Job\Job $job
+   * @return bool
+   */
+  private function jobCanRun(\GO\Job\Job $job)
+  {
+    // Check if file exists, if not return true
+    $lockFile = implode('/', [$this->getTempDir(), md5($job->getCommand()) . '.lock']);
+    if (! file_exists($lockFile)) {
+      return true;
+    }
+
+    // Return false if no callback was specified
+    if ($job->preventOverlap() === true) {
+      return false;
+    }
+
+    $filetime = filemtime($lockFile);
+    $callback = $job->preventOverlap();
+
+    return ! $callback($filetime);
   }
 
 }

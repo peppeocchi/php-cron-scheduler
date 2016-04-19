@@ -7,7 +7,7 @@ PHP Cron Scheduler
 This is a simple cron jobs scheduler inspired by the [Laravel Task Scheduling](http://laravel.com/docs/5.1/scheduling).
 
 ## Installing via Composer
-The raccomended way is to install the php-cron-scheduler is through [Composer](https://getcomposer.org/).
+The recommended way is to install the php-cron-scheduler is through [Composer](https://getcomposer.org/).
 
 Please refer to [Getting Started](https://getcomposer.org/doc/00-intro.md) on how to download and install Composer.
 
@@ -114,7 +114,7 @@ And you are ready to go.
 ### Config
 You can pass to the Scheduler constructor an array with your global config for the jobs
 
-The only supported configuration until now is the sender email address when sending the result of a job execution
+- Set the sender email address when sending the result of a job execution
 
 ```php
 ...
@@ -124,6 +124,14 @@ $config = [
 
 $scheduler = new Scheduler($config);
 ...
+```
+
+- Set the path to a directory for temporary files (job locks, to prevent job overlapping). If the path does not exists or is not writable, an exception will be thrown straight away.
+
+```php
+$scheduler = new Scheduler([
+  'tempDir' => 'my/custom/temp/dir'
+])
 ```
 
 ### Jobs execution order
@@ -188,6 +196,24 @@ $scheduler->raw('command')->when(function () {
     return true;
   });
 ```
+
+### Job overlapping
+The `doNotOverlap()` function prevents job overlapping.
+```
+$scheduler->raw('command')->at('* * * * *')->doNotOverlap();
+```
+This will prevent the execution of the job if the same job is already being executed.
+
+The function accepts a callback that lets you decide if a job execution is allowed to overlap.
+The callback will receive the unix timestamp of when the current running job started. If your callback returns a negative value, the new job will be executed despite the current running job.
+```
+$scheduler->raw('command')->at('* * * * *')->doNotOverlap(function ($lastExecutionTime) {
+  // Allow overlapping jobs if last execution was 5 minutes ago
+  return time() - $filetime < 300;
+});
+```
+
+This functionality by default will create a temp file on the sys temp directory. You can set your own temp directory path when creating a new scheduler instance, passing the `tempDir` config to the constructor.
 
 ### Schedule time
 `Scheduler` uses `Cron\CronExpression` as an expression parser.

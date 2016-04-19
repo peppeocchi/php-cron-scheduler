@@ -71,4 +71,75 @@ class SchedulerTest extends \PHPUnit_Framework_TestCase
 
     $this->assertEquals(1, count($scheduler->getExecutedJobs()));
   }
+
+  /**
+   * @expectedException InvalidArgumentException
+   */
+  public function testShouldThrowExceptionIfTempDirNotExists()
+  {
+    $scheduler = new Scheduler([
+      'tempDir' => 'someinvalid/path'
+    ]);
+  }
+
+  /**
+   * @expectedException InvalidArgumentException
+   */
+  public function testShouldThrowExceptionIfTempDirIsNotWritable()
+  {
+    $scheduler = new Scheduler([
+      'tempDir' => __DIR__ . '/../non_writable/'
+    ]);
+  }
+
+  public function testShouldOverlapIfCallbackReturnsFalse()
+  {
+    $scheduler = new Scheduler([
+      'tempDir' => __DIR__ . '/../tmp'
+    ]);
+
+    $script = __DIR__.'/../test_overlap.php';
+
+    $job = $scheduler->php($script)->at('* * * * *')->doNotOverlap(function() {
+      return false;
+    });
+
+    $scheduler->run();
+
+    $this->assertEquals(1, count($scheduler->getExecutedJobs()));
+  }
+
+  public function testShouldRemoveLockFileAfterRun()
+  {
+    $scheduler = new Scheduler([
+      'tempDir' => __DIR__ . '/../tmp'
+    ]);
+
+    $script = __DIR__.'/../test_overlap.php';
+
+    $job = $scheduler->php($script)->at('* * * * *')->doNotOverlap();
+
+    $scheduler->run();
+    $expectedFile = implode('/', [$scheduler->getTempDir(), md5($job->getCommand()) . '.lock']);
+
+    $this->assertTrue(! file_exists($expectedFile));
+  }
+
+  public function testShouldNotExecuteJobIfLockFileExists()
+  {
+    $scheduler = new Scheduler([
+      'tempDir' => __DIR__ . '/../tmp'
+    ]);
+
+    $script = __DIR__.'/../test_overlap.php';
+
+    $job = $scheduler->php($script)->at('* * * * *')->doNotOverlap();
+
+    $path = implode('/', [$scheduler->getTempDir(), md5($job->getCommand()) . '.lock']);
+    touch($path);
+
+    $scheduler->run();
+
+    $this->assertEquals(0, count($scheduler->getExecutedJobs()));
+  }
 }
