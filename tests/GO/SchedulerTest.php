@@ -87,8 +87,11 @@ class SchedulerTest extends \PHPUnit_Framework_TestCase
    */
   public function testShouldThrowExceptionIfTempDirIsNotWritable()
   {
+    $tempDir = __DIR__ . '/../non_writable/';
+    chmod($tempDir, 0555);
+
     $scheduler = new Scheduler([
-      'tempDir' => __DIR__ . '/../non_writable/'
+      'tempDir' => $tempDir
     ]);
   }
 
