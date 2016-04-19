@@ -209,7 +209,7 @@ The callback will receive the unix timestamp of when the current running job sta
 ```
 $scheduler->raw('command')->at('* * * * *')->doNotOverlap(function ($lastExecutionTime) {
   // Allow overlapping jobs if last execution was 5 minutes ago
-  return time() - $filetime < 300;
+  return time() - $lastExecutionTime < 300;
 });
 ```
 
