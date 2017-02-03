@@ -56,6 +56,13 @@ class JobTest extends \PHPUnit_Framework_TestCase
     $this->assertFalse($job->runInBackground);
   }
 
+  public function testRunInForgroundIsChainable()
+  {
+    $job = JobFactory::factory('GO\Job\Php', 'some command')->runInForeground()->at('* * * * *');
+
+    $this->assertFalse($job->runInBackground);
+  }
+
   public function testShouldAppendArgs()
   {
     $args = [
