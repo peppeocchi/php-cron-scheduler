@@ -387,6 +387,8 @@ abstract class Job implements LoggerAwareInterface
   public function runInForeground()
   {
     $this->runInBackground = false;
+    
+    return $this;
   }
 
   /**
