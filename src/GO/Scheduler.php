@@ -228,7 +228,10 @@ class Scheduler
 
           // Create lock file for this job to prevent overlap
           $lockFile = implode('/', [$this->getTempDir(), md5($job->getCommand()) . '.lock']);
-          Filesystem::write($job->getCommand(), $lockFile);
+          $lockFileContent = '';
+          if(isset($this->config['verboseLockFile']) && $this->config['verboseLockFile'] == true)
+              $lockFileContent = $job->getCommand();
+          Filesystem::write($lockFileContent, $lockFile);
           // Sets the file to remove after the execution
           $job->removeLockAfterExec($lockFile);
           // Sets the job to run in foreground
