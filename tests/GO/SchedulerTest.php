@@ -144,6 +144,8 @@ class SchedulerTest extends \PHPUnit_Framework_TestCase
     $scheduler->run();
 
     $this->assertEquals(0, count($scheduler->getExecutedJobs()));
+
+    unlink($path);
   }
 
   public function testVerboseLockFileShouldWriteCommandToLockFile()
@@ -158,11 +160,21 @@ class SchedulerTest extends \PHPUnit_Framework_TestCase
 
       $scheduler->call(function() use ($commandId, $path){
               $lockFileContent = trim(file_get_contents($path));
-              $this->assertEquals($commandId.'2', $lockFileContent);
+              $this->assertEquals($commandId, $lockFileContent);
           }, [], $commandId)
           ->at('* * * * *')
           ->doNotOverlap();
 
-      $scheduler->run();
+      try
+      {
+          $scheduler->run();
+      }
+      catch(\PHPUnit_Framework_AssertionFailedError $e){
+          throw $e;
+      }
+      finally
+      {
+          unlink($path);
+      }
   }
 }
