@@ -251,7 +251,7 @@ class Scheduler
    * If overlapping and a callback has been provided,
    * the result of that function will decide if the job can overlap.
    *
-   * @param GO\Job\Job $job
+   * @param \GO\Job\Job $job
    * @return bool
    */
   private function jobCanRun(\GO\Job\Job $job)
