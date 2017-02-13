@@ -180,11 +180,13 @@ class Scheduler
    * Closure job
    *
    * @param callable $closure
+   * @param array $args
+   * @param string $commandId
    * @return instance of GO\Job\Job
    */
-  public function call($closure)
+  public function call($closure, $args = [], $commandId = null)
   {
-    return $this->jobs[] = JobFactory::factory(\GO\Job\Closure::class, $closure);
+    return $this->jobs[] = JobFactory::factory(\GO\Job\Closure::class, $closure, $args, $commandId);
   }
 
   /**
@@ -215,7 +217,6 @@ class Scheduler
 
     foreach ($this->jobs as $job) {
       $job->setup($this->config);
-
       // Check if job is due and if it should prevent overlapping
       if ($job->isDue()) {
 
@@ -225,12 +226,11 @@ class Scheduler
           if (! $this->jobCanRun($job)) {
             continue;
           }
-
           // Create lock file for this job to prevent overlap
-          $lockFile = implode('/', [$this->getTempDir(), md5($job->getCommand()) . '.lock']);
+          $lockFile = implode('/', [$this->getTempDir(), md5($job->getCommandId()) . '.lock']);
           $lockFileContent = '';
           if(isset($this->config['verboseLockFile']) && $this->config['verboseLockFile'] == true)
-              $lockFileContent = $job->getCommand();
+              $lockFileContent = $job->getCommandId();
           Filesystem::write($lockFileContent, $lockFile);
           // Sets the file to remove after the execution
           $job->removeLockAfterExec($lockFile);
@@ -257,7 +257,7 @@ class Scheduler
   private function jobCanRun(\GO\Job\Job $job)
   {
     // Check if file exists, if not return true
-    $lockFile = implode('/', [$this->getTempDir(), md5($job->getCommand()) . '.lock']);
+    $lockFile = implode('/', [$this->getTempDir(), md5($job->getCommandId()) . '.lock']);
     if (! file_exists($lockFile)) {
       return true;
     }

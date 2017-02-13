@@ -27,6 +27,13 @@ abstract class Job implements LoggerAwareInterface
    */
   protected $args;
 
+    /**
+     * Optional identifier for the command to determine concurrency instead of the command itself.
+     *
+     * @var null|string
+     */
+  protected $commandId;
+
   /**
    * The compiled command
    *
@@ -119,15 +126,18 @@ abstract class Job implements LoggerAwareInterface
    *
    * @param mixed $job
    * @param array $args
+   * @param string $commandId
    * @return void
    */
-  public function __construct($job, array $args = [])
+  public function __construct($job, array $args = [], $commandId = null)
   {
     $this->time = time();
 
     $this->command = $job;
 
     $this->args = $args;
+
+    $this->commandId = $commandId;
 
     if (method_exists($this, 'init')) {
       $this->init();
@@ -142,6 +152,18 @@ abstract class Job implements LoggerAwareInterface
   public function getCommand()
   {
     return $this->command;
+  }
+
+    /**
+     * Get commandId
+     *
+     * @return array|string
+     */
+  public function getCommandId()
+  {
+      if(isset($this->commandId) && is_string($this->commandId) && !empty($this->commandId))
+          return $this->commandId;
+      return $this->getCommand();
   }
 
   /**

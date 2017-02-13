@@ -145,4 +145,24 @@ class SchedulerTest extends \PHPUnit_Framework_TestCase
 
     $this->assertEquals(0, count($scheduler->getExecutedJobs()));
   }
+
+  public function testVerboseLockFileShouldWriteCommandToLockFile()
+  {
+      $scheduler = new Scheduler([
+          'tempDir' => __DIR__ . '/../tmp',
+          'verboseLockFile' => true
+      ]);
+
+      $commandId = 'FooBar';
+      $path = implode('/', [$scheduler->getTempDir(), md5($commandId) . '.lock']);
+
+      $scheduler->call(function() use ($commandId, $path){
+              $lockFileContent = trim(file_get_contents($path));
+              $this->assertEquals($commandId.'2', $lockFileContent);
+          }, [], $commandId)
+          ->at('* * * * *')
+          ->doNotOverlap();
+
+      $scheduler->run();
+  }
 }

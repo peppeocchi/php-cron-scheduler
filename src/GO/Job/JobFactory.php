@@ -15,14 +15,15 @@ class JobFactory
    * @param string $class
    * @param string $command
    * @param array $args
+   * @param string $commandId
    * @return instance of GO\Job\Job
    */
-  public static function factory($class, $command, array $args = [])
+  public static function factory($class, $command, array $args = [], $commandId = null)
   {
     if (!class_exists($class)) {
       throw new InvalidFactoryException("Class $class doesn't exists");
     }
 
-    return new $class($command, $args);
+    return new $class($command, $args, $commandId);
   }
 }
