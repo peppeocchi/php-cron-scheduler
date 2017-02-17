@@ -280,7 +280,7 @@ abstract class Job implements LoggerAwareInterface
    */
   public function isDue()
   {
-    return $this->execution->isDue() && $this->truthTest === true;
+    return $this->execution->isDue(date("c", $this->time)) && $this->truthTest === true;
   }
 
   /**
