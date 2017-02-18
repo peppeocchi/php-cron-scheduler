@@ -346,6 +346,18 @@ abstract class Job implements LoggerAwareInterface
   }
 
   /**
+   * Remove lock file after closure execution.
+   *
+   * @return void
+   */
+  protected function removeLock()
+  {
+    if (file_exists($this->lockFile)) {
+      unlink($this->lockFile);
+    }
+  }
+  
+  /**
    * Execute the job
    *
    * @return string - The output of the executed job
@@ -364,6 +376,9 @@ abstract class Job implements LoggerAwareInterface
       if (is_string($return)) {
         $jobOutput[] = $return;
       }
+      
+      // unlink lock file
+      $this->removeLock();
     } else {
       $return = exec($this->compiled, $jobOutput);
     }
