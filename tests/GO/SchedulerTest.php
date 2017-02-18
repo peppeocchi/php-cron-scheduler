@@ -172,9 +172,5 @@ class SchedulerTest extends \PHPUnit_Framework_TestCase
       catch(\PHPUnit_Framework_AssertionFailedError $e){
           throw $e;
       }
-      finally
-      {
-          unlink($path);
-      }
   }
 }
