@@ -234,8 +234,6 @@ class Scheduler
           Filesystem::write($lockFileContent, $lockFile);
           // Sets the file to remove after the execution
           $job->removeLockAfterExec($lockFile);
-          // Sets the job to run in foreground
-          $job->runInForeground();
         }
 
         $output[] = $job->exec();
