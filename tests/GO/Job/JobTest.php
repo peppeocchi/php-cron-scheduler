@@ -92,14 +92,6 @@ class JobTest extends \PHPUnit_Framework_TestCase
     $this->assertFalse($job->isDue());
   }
 
-  /**
-   * @expectedException TypeError
-   */
-  public function testShouldAcceptOnlyCallbackWithDoNotOverlap()
-  {
-    $job = JobFactory::factory('GO\Job\Php', 'some command')->at('* * * * *')->doNotOverlap([1,2]);
-  }
-
   public function testShouldSetCallbackWithDoNotOverlap()
   {
     $job = JobFactory::factory('GO\Job\Php', 'some command')->at('* * * * *')
