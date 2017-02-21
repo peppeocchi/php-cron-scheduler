@@ -151,7 +151,7 @@ abstract class Job implements LoggerAwareInterface
    */
   public function getCommand()
   {
-    return $this->command;
+    return is_string($this->command) ? $this->command : spl_object_hash($this->command);
   }
 
     /**
@@ -161,9 +161,11 @@ abstract class Job implements LoggerAwareInterface
      */
   public function getCommandId()
   {
-      if(isset($this->commandId) && is_string($this->commandId) && !empty($this->commandId))
-          return $this->commandId;
-      return $this->getCommand();
+    if (isset($this->commandId) && is_string($this->commandId) && !empty($this->commandId)) {
+      return $this->commandId;
+    }
+
+    return $this->getCommand();
   }
 
   /**
@@ -356,7 +358,7 @@ abstract class Job implements LoggerAwareInterface
       unlink($this->lockFile);
     }
   }
-  
+
   /**
    * Execute the job
    *
@@ -368,7 +370,12 @@ abstract class Job implements LoggerAwareInterface
     $this->compiled = $this->build();
 
     if (is_callable($this->compiled)) {
-      $return = call_user_func($this->command, $this->args);
+      try {
+        $return = call_user_func($this->command, $this->args);
+      } catch (\Exception $e) {
+        $return = $e->getMessage();
+      }
+
       foreach ($this->outputs as $output) {
         Filesystem::write($return, $output, $this->mode);
       }
@@ -376,7 +383,7 @@ abstract class Job implements LoggerAwareInterface
       if (is_string($return)) {
         $jobOutput[] = $return;
       }
-      
+
       // unlink lock file
       $this->removeLock();
     } else {
@@ -424,7 +431,7 @@ abstract class Job implements LoggerAwareInterface
   public function runInForeground()
   {
     $this->runInBackground = false;
-    
+
     return $this;
   }
 
