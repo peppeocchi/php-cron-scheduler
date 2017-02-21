@@ -119,7 +119,7 @@ You can pass to the Scheduler constructor an array with your global config for t
 ```php
 ...
 $config = [
-  'emailFrom' => 'myEmail@address.com'
+  'emailFrom' => 'myEmail@address.com',
 ];
 
 $scheduler = new Scheduler($config);
@@ -130,8 +130,28 @@ $scheduler = new Scheduler($config);
 
 ```php
 $scheduler = new Scheduler([
-  'tempDir' => 'my/custom/temp/dir'
+  'tempDir' => 'my/custom/temp/dir',
 ])
+```
+
+- Set your timezone. Default to `Europe/Dublin`.
+
+```php
+$scheduler = new Scheduler([
+  'timezone' => 'Europe/Dublin',
+])
+```
+
+- Create verbose lock files. This config allows you to define an identifier for closures that shouldn't overlap. The standard behaviour is to generate an hash of the closure and use that hash to create the lock file. With this option, the generated lock file will be the `md5` hash of your command id. [Read more](https://github.com/peppeocchi/php-cron-scheduler/pull/10)
+
+```php
+$scheduler = new Scheduler([
+  'verboseLockFile' => true,
+]);
+
+$job = $scheduler->call(function () {
+  return true;
+}, [], 'myCommandId');
 ```
 
 ### Jobs execution order
