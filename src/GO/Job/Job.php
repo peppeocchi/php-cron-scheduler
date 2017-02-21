@@ -27,6 +27,13 @@ abstract class Job implements LoggerAwareInterface
    */
   protected $args;
 
+    /**
+     * Optional identifier for the command to determine concurrency instead of the command itself.
+     *
+     * @var null|string
+     */
+  protected $commandId;
+
   /**
    * The compiled command
    *
@@ -119,15 +126,18 @@ abstract class Job implements LoggerAwareInterface
    *
    * @param mixed $job
    * @param array $args
+   * @param string $commandId
    * @return void
    */
-  public function __construct($job, array $args = [])
+  public function __construct($job, array $args = [], $commandId = null)
   {
     $this->time = time();
 
     $this->command = $job;
 
     $this->args = $args;
+
+    $this->commandId = $commandId;
 
     if (method_exists($this, 'init')) {
       $this->init();
@@ -142,6 +152,18 @@ abstract class Job implements LoggerAwareInterface
   public function getCommand()
   {
     return $this->command;
+  }
+
+    /**
+     * Get commandId
+     *
+     * @return array|string
+     */
+  public function getCommandId()
+  {
+      if(isset($this->commandId) && is_string($this->commandId) && !empty($this->commandId))
+          return $this->commandId;
+      return $this->getCommand();
   }
 
   /**
@@ -258,7 +280,7 @@ abstract class Job implements LoggerAwareInterface
    */
   public function isDue()
   {
-    return $this->execution->isDue() && $this->truthTest === true;
+    return $this->execution->isDue(date("c", $this->time)) && $this->truthTest === true;
   }
 
   /**
@@ -324,6 +346,18 @@ abstract class Job implements LoggerAwareInterface
   }
 
   /**
+   * Remove lock file after closure execution.
+   *
+   * @return void
+   */
+  protected function removeLock()
+  {
+    if (file_exists($this->lockFile)) {
+      unlink($this->lockFile);
+    }
+  }
+  
+  /**
    * Execute the job
    *
    * @return string - The output of the executed job
@@ -342,6 +376,9 @@ abstract class Job implements LoggerAwareInterface
       if (is_string($return)) {
         $jobOutput[] = $return;
       }
+      
+      // unlink lock file
+      $this->removeLock();
     } else {
       $return = exec($this->compiled, $jobOutput);
     }
