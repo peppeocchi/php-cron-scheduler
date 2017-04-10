@@ -19,15 +19,16 @@ or add the package to your `composer.json`
 ```json
 {
     "require": {
-        "peppeocchi/php-cron-scheduler": "1.*"
+        "peppeocchi/php-cron-scheduler": "2.*"
     }
 }
 ```
 
 ## How it works
-Instead of adding a new entry in the crontab for each cronjob you have to run, you can add only one cron job to your crontab and define the commands in your .php file.
+The `Scheluder` lets you easily manage your cronjobs without having to interact directly with the crontab.
+The configuration sits on a php file that defines all your schedules.
 
-By default when you schedule a command it will run in background, you can overwrite that behavior by calling `->runInForeground()` method.
+By default when you schedule a command it will run in background but you can overwrite that behavior by calling the `->runInForeground()` method.
 ```php
 $scheduler->call('myFunction')->runInForeground()->every()->minute();
 ```
@@ -41,26 +42,21 @@ Create your `scheduler.php` file like this
 use GO\Scheduler;
 
 function myFunc() {
-  return "Hello world from function!";
+    return "Hello world from function!";
 }
 
 $scheduler = new Scheduler([
-  'emailFrom' => 'myemail@address.from'
+    'emailFrom' => 'myemail@address.from'
 ]);
 
 
 /**
- * Schedule cronjob.php to run every minute
+ * Schedule the file cronjob.php to run every minute
  *
  */
-$scheduler->php(__DIR__.'/cronjob.php')->at('* * * * *')->output(__DIR__.'/cronjob.log');
-
-
-/**
- * Schedule a php job to run with your bin
- *
- */
-$scheduler->php(__DIR__.'/cronjob.php')->useBin('/usr/bin/php')->at('* * * * *')->output(__DIR__.'/cronjob_bin.log', true);
+$scheduler->php(__DIR__.'/cronjob.php')
+    ->at('* * * * *')
+    ->output(__DIR__.'/cronjob.log');
 
 
 /**
@@ -69,18 +65,31 @@ $scheduler->php(__DIR__.'/cronjob.php')->useBin('/usr/bin/php')->at('* * * * *')
  * Pass `true` as a second parameter to append the output to that file
  *
  */
-$scheduler->raw('ps aux | grep httpd')->at('* * * * *')->output(__DIR__.'/raw.log', true);
+$scheduler->raw('ps aux | grep httpd')
+    ->at('* * * * *')->output(__DIR__.'/raw.log', true);
 
 
 /**
  * Run your own function every day at 10:30
  *
  */
-$scheduler->call('myFunc')->every()->day('10:30')->output(__DIR__.'/call.log');
+
+function myFunc($name = null) {
+    if ($name) {
+        sendmail("Hello {$name}!");
+    } else {
+        sendmail("Hello World!");
+    }
+}
+
+$scheduler->call('myFunc')->everyDay(10, 30)->output(__DIR__.'/call.log');
+$scheduler->call('myFunc', [
+    'name' => $user->name,
+])->everyDay('10:30')->output(__DIR__.'/call.log');
 
 $scheduler->call(function () {
-    return "This works the same way";
-  })->at('* * * * *')->output(__DIR__.'/call.log');
+    return "Hello World!";
+})->at('* * * * *')->output(__DIR__.'/call.log');
 
 /**
  * Run only when your func returns true
