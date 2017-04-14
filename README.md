@@ -4,11 +4,11 @@ PHP Cron Scheduler
 [![Build Status](https://travis-ci.org/peppeocchi/php-cron-scheduler.svg)](https://travis-ci.org/peppeocchi/php-cron-scheduler)
 [![Latest Stable Version](https://poser.pugx.org/peppeocchi/php-cron-scheduler/v/stable)](https://packagist.org/packages/peppeocchi/php-cron-scheduler) [![Total Downloads](https://poser.pugx.org/peppeocchi/php-cron-scheduler/downloads)](https://packagist.org/packages/peppeocchi/php-cron-scheduler) [![Latest Unstable Version](https://poser.pugx.org/peppeocchi/php-cron-scheduler/v/unstable)](https://packagist.org/packages/peppeocchi/php-cron-scheduler) [![License](https://poser.pugx.org/peppeocchi/php-cron-scheduler/license)](https://packagist.org/packages/peppeocchi/php-cron-scheduler)
 
-This is a simple cron jobs scheduler inspired by the [Laravel Task Scheduling](http://laravel.com/docs/5.1/scheduling).
+This is a framework agnostic cron jobs scheduler that can be easily integrated with your project or run as a standalone command scheduler.
+The idea was originally inspired by the [Laravel Task Scheduling](http://laravel.com/docs/5.1/scheduling).
 
 ## Installing via Composer
 The recommended way is to install the php-cron-scheduler is through [Composer](https://getcomposer.org/).
-
 Please refer to [Getting Started](https://getcomposer.org/doc/00-intro.md) on how to download and install Composer.
 
 After you have downloaded/installed Composer, run
@@ -25,232 +25,269 @@ or add the package to your `composer.json`
 ```
 
 ## How it works
-The `Scheluder` lets you easily manage your cronjobs without having to interact directly with the crontab.
-The configuration sits on a php file that defines all your schedules.
 
-By default when you schedule a command it will run in background but you can overwrite that behavior by calling the `->runInForeground()` method.
+Create a `scheduler.php` file in the root your project with the following content.
 ```php
-$scheduler->call('myFunction')->runInForeground()->every()->minute();
-```
-
-**Jobs that should send the output to email/s are always set to run in foreground**
-
-Create your `scheduler.php` file like this
-```php
-<?php require_once __DIR__.'/../vendor/autoload.php';
+<?php require_once __DIR__.'/vendor/autoload.php';
 
 use GO\Scheduler;
 
-function myFunc() {
-    return "Hello world from function!";
-}
-
-$scheduler = new Scheduler([
-    'emailFrom' => 'myemail@address.from'
-]);
-
-
-/**
- * Schedule the file cronjob.php to run every minute
- *
- */
-$scheduler->php(__DIR__.'/cronjob.php')
-    ->at('* * * * *')
-    ->output(__DIR__.'/cronjob.log');
-
-
-/**
- * Schedule a raw command to tun every minute between 00 and 04 of every hour,
- * send the output to raw.log
- * Pass `true` as a second parameter to append the output to that file
- *
- */
-$scheduler->raw('ps aux | grep httpd')
-    ->at('* * * * *')->output(__DIR__.'/raw.log', true);
-
-
-/**
- * Run your own function every day at 10:30
- *
- */
-
-function myFunc($name = null) {
-    if ($name) {
-        sendmail("Hello {$name}!");
-    } else {
-        sendmail("Hello World!");
-    }
-}
-
-$scheduler->call('myFunc')->everyDay(10, 30)->output(__DIR__.'/call.log');
-$scheduler->call('myFunc', [
-    'name' => $user->name,
-])->everyDay('10:30')->output(__DIR__.'/call.log');
-
-$scheduler->call(function () {
-    return "Hello World!";
-})->at('* * * * *')->output(__DIR__.'/call.log');
-
-/**
- * Run only when your func returns true
- *
- */
-$scheduler->php(__DIR__.'/cronjob.php')
-  ->at('* * * * *')
-  ->when(function () {
-    return false;
-  })->output(__DIR__.'/never_created.log');
-
-/**
- * Send the output to an email address
- *
- */
-$scheduler->call(function () {
-    return "This will be sent via email";
-  })->at('* * * * *')->output(__DIR__.'/call.log')->email('myemail@address.to');
-
-$scheduler->run();
+// Create a new scheduler
+$scheduler = new Scheduler();
 ```
 
-Then add to your crontab
+Then add a new entry to your crontab to run `scheduler.php` every minute.
 
 ````
 * * * * * path/to/phpbin path/to/scheduler.php 1>> /dev/null 2>&1
 ````
 
-And you are ready to go.
+That's it! Your scheduler is up and running, now you can add your jobs without worring anymore about the crontab.
 
-### Config
-You can pass to the Scheduler constructor an array with your global config for the jobs
+## Scheduling jobs
 
-- Set the sender email address when sending the result of a job execution
+By default all your jobs will try to run in background.
+PHP scripts and raw commands will run in background by default, while functions will always run in foreground.
+You can force a command to run in foreground by calling the `inForeground()` method.
+**Jobs that have to send the output to email, will run foreground**.
+
+### Schedule a php script
 
 ```php
-...
-$config = [
-  'emailFrom' => 'myEmail@address.com',
-];
-
-$scheduler = new Scheduler($config);
-...
+$scheduler->php('path/to/my/script.php');
+```
+The `php` method accepts 4 arguments:
+- The path to your php script
+- The PHP binary to use
+- Arguments to be passed to the script
+- Identifier
+```php
+$scheduler->php(
+    'path/to/my/script.php', // The script to execute
+    'path/to/my/custom/bin/php', // The PHP bin
+    [
+        '-c' => 'ignore',
+        '--merge' => null,
+    ],
+    'myCustomIdentifier'
+);
 ```
 
-- Set the path to a directory for temporary files (job locks, to prevent job overlapping). If the path does not exists or is not writable, an exception will be thrown straight away.
+### Schedule a raw command
 
 ```php
-$scheduler = new Scheduler([
-  'tempDir' => 'my/custom/temp/dir',
-])
+$scheduler->raw('ps aux | grep httpd');
+```
+The `raw` method accepts 3 arguments:
+- Your command
+- Arguments to be passed to the command
+- Identifier
+```php
+$scheduler->raw(
+    'mycommand | myOtherCommand',
+    [
+        '-v' => '6',
+        '--silent' => null,
+    ],
+    'myCustomIdentifier'
+);
 ```
 
-- Set your timezone. Default to `Europe/Dublin`.
+### Schedule a function
 
 ```php
-$scheduler = new Scheduler([
-  'timezone' => 'Europe/Dublin',
-])
+$scheduler->call(function () {
+    return true;
+});
+```
+The `call` method accepts 3 arguments:
+- Your function
+- Arguments to be passed to the function
+- Identifier
+```php
+$scheduler->call(
+    function ($args) {
+        return $args['user'];
+    },
+    [
+        'user' => $user,
+    ],
+    'myCustomIdentifier'
+);
 ```
 
-- Create verbose lock files. This config allows you to define an identifier for closures that shouldn't overlap. The standard behaviour is to generate an hash of the closure and use that hash to create the lock file. With this option, the generated lock file will be the `md5` hash of your command id. [Read more](https://github.com/peppeocchi/php-cron-scheduler/pull/10)
+### Schedules execution time
+
+There are a few methods to help you set the execution time of your schedules.
+If you don't call any of this method, the job will run every minute (* * * * *).
+
+- `at` - This method accepts any expression supported by [mtdowling/cron-expression](https://github.com/mtdowling/cron-expression)
+    ```php
+    $schedule->php('script.php')->at('* * * * *');
+    ```
+- `everyMinute` - Run every minute
+    ```php
+    $schedule->php('script.php')->everyMinute();
+    ```
+- `hourly` - Run once per hour. You can optionally pass the `$minute` you want to run, bu default it will run every hour at minute '00'.
+    ```php
+    $schedule->php('script.php')->hourly();
+    $schedule->php('script.php')->hourly(53);
+    ```
+- `daily` - Run once per day. You can optionally pass `$hour` and `$minute` to have more granular control (or a string `hour:minute`)
+    ```php
+    $schedule->php('script.php')->daily();
+    $schedule->php('script.php')->daily(22, 03);
+    $schedule->php('script.php')->daily('22:03');
+    ```
+
+### Send output to file/s
+
+You can define one or multiple files where you want the output of your script/command/function execution to be sent to.
 
 ```php
-$scheduler = new Scheduler([
-  'verboseLockFile' => true,
+$scheduler->php('script.php')->output([
+    'my_file1.log', 'my_file2.log'
 ]);
 
-$job = $scheduler->call(function () {
-  return true;
-}, [], 'myCommandId');
+// The scheduler catches both stdout and function return and send
+// those values to the output file
+$scheduler->call(function () {
+    echo "Hello";
+
+    return " world!";
+})->output('my_file.log');
 ```
 
-### Jobs execution order
-The jobs that are due to run are being ordered by their execution: jobs that can run in **background** will be executed **first**
+### Send output to email/s
 
-
-### Job types
-After creating a new `Scheduler` instance, you can add few type of jobs
-- `->php('myCommand')`, execute a `PHP` job. If you need you can set your own `PHP_BINARY`
-```php
-$scheduler->php('myCommand')->useBin('myBin')
-```
-- `->raw('myCommand')`, execute a raw command in the shell, you can use this type if you want to pipe several commands like `ps aux | grep memcached`
-- `->call('myFunction')`, execute your own function
-- you can optionally write your own interpreter (if you want you can do a PR to add the interpreter to this repo), just extend `GO\Job\Job` and define the `build()` method, and an optional `init()` if it requires to be initiated before running the command - eg. to define a bin path
-
-### Output
-You can send the output of the execution of your cron job either to a file and an email address.
-- `->output('myfile')` will overwrite that file if exists
-- `->output('myfile', true)` will append to that file (if exists)
-If you want to send the output to an email address, you need to send first the output to a file. That file will be attached to the email
-- `->output('myfile')->email('myemail')`
-You can pass an array of files or emails if you want to send the output to multiple files/emails
--> `output(['first_file', 'second_file'])->email(['myemail1' => 'Dev1', 'myemail2' => 'Dev2'])`
-
-### Advanced logging
-Additionally to the file or email output, you can use a PSR-3 compatible Logger (e.g. Monolog) to handle the job output.
+You can define one or multiple email addresses where you want the output of your script/command/function execution to be sent to.
+In order for the email to be sent, the output of the job needs to be sent first to a file.
+In fact, the files will be attached to your email address.
+In order for this to work, you need to install [swiftmailer/swiftmailer](https://github.com/swiftmailer/swiftmailer)
 
 ```php
-<?php
-
-require_once __DIR__ . '/../vendor/autoload.php';
-
-use GO\Scheduler;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-
-$log = new Logger('logger-name');
-$log->pushHandler(new StreamHandler('/tmp/log.log', Logger::INFO));
-
-$scheduler
-    ->call(function () {
-        return "just output something";
-    })
-    ->at('* * * * *')
-    ->setLogger($log);
-
-$scheduler->run();
+$scheduler->php('script.php')->output([
+    // If you specify multiple files, both will be attached to the email
+    'my_file1.log', 'my_file2.log'
+])->email([
+    [
+        'someemail@mail.com' => 'My custom name'
+    ],
+    'someotheremail@mail.com'
+]);
 ```
 
-The Scheduler will use the INFO level for logging the output.
+You can optionally customize the `Swift_Mailer` instance with a custom `Swift_Transport`.
+You can configure:
+- `subject` - The subject of the email sent
+- `from` - The email address set as sender
+- `body` - The body of the email
+- `transport` - The transport to use. For example if you want to use your gmail account or any other SMTP account. The value should be an instance of `Swift_Tranport`
 
-#### More logging options
-- `->setLabel('my-log-label')` will log the job output using this label
-- `->setJobDoneMessage('job xyz done!')` will add an additional message that will be logged when the job is done. This can be useful if you want to track that a job is executed, even though it does not output anything by itself.  
+The configuration can be set "globally" for all the scheduler commands, when creating the scheduler.
 
-### Conditional
-You can delegate the execution of a cronjob to a truthful test.
+```php
+$scheduler = new Scheduler([
+    'email' => [
+        'subject' => 'Visitors count',
+        'from' => 'cron@email.com',
+        'body' => 'This is the daily visitors count',
+        'transport' => Swift_SmtpTransport::newInstance('smtp.gmail.com', 465, 'ssl')
+                            ->setUsername('username')
+                            ->setPassword('password');
+    ]
+]);
 ```
-$scheduler->raw('command')->when(function () {
-    .....
+
+Or can be set on a job per job basis.
+
+```php
+$scheduler = new Scheduler();
+
+$scheduler->php('myscript.php')->configure([
+    'email' => [
+        'subject' => 'Visitors count',
+    ]
+]);
+
+$scheduler->php('my_other_script.php')->configure([
+    'email' => [
+        'subject' => 'Page views count',
+    ]
+]);
+```
+
+### Schedule conditional execution
+
+Sometimes you might want to execute a schedule not only when the execution is due, but also depending on some other condition.
+
+You can delegate the execution of a cronjob to a truthful test with the method `when`.
+
+```php
+$scheduler->php('script.php')->when(function () {
+    // The job will run (if due) only when
+    // this function returns true
     return true;
-  });
-```
-
-### Job overlapping
-The `doNotOverlap()` function prevents job overlapping.
-```
-$scheduler->raw('command')->at('* * * * *')->doNotOverlap();
-```
-This will prevent the execution of the job if the same job is already being executed.
-
-The function accepts a callback that lets you decide if a job execution is allowed to overlap.
-The callback will receive the unix timestamp of when the current running job started. If your callback returns a negative value, the new job will be executed despite the current running job.
-```
-$scheduler->raw('command')->at('* * * * *')->doNotOverlap(function ($lastExecutionTime) {
-  // Allow overlapping jobs if last execution was 5 minutes ago
-  return time() - $lastExecutionTime < 300;
 });
 ```
 
-This functionality by default will create a temp file on the sys temp directory. You can set your own temp directory path when creating a new scheduler instance, passing the `tempDir` config to the constructor.
+### Schedules execution order
 
-### Schedule time
-`Scheduler` uses `Cron\CronExpression` as an expression parser.
+The jobs that are due to run are being ordered by their execution: jobs that can run in **background** will be executed **first**.
 
-So you can schedule the job using the `->at('myCronExpression')` method and passing to that your cron expression (eg. `* * * * *`) or one of the expression supported by [mtdowling/cron-expression](https://github.com/mtdowling/cron-expression)
+### Schedules overlapping
 
-Optionally you can use the "pretty scheduling" that lets you define times in an eloquent way. To do that you should call the `->every()` followed by
-- `->minute()`, the job will be scheduled to run every minute
-- `->hour('02')` the job will be scheduled to run every hour. Default `minute` is `00` but you can override that with your own `minute` (in the example it will run every hour at minute `02`)
-- `->day('10:23')` the job will be scheduled to run every day. Default `hour:minute` is `00:00` but you can override that with your own `hour:minute`
-- `->month('25 10:30')` the job will be scheduled to run every month. Default `day hour:minute` is `01 00:00` but you can override that with your own `day hour:minute`
+To prevent the execution of a schedule while the previous execution is still in progress, use the method `onlyOne`. To avoid overlapping, the Scheduler needs to create **lock files**.
+By default it will be used the directory path used for temporary files.
+
+You can specify a custom directory path globally, when creating a new Scheduler instance.
+
+```php
+$scheduler = new Scheduler([
+    'tempDir' => 'path/to/my/tmp/dir'
+]);
+
+$scheduler->php('script.php')->onlyOne();
+```
+
+Or you can define the directory path on a job per job basis.
+
+```php
+$scheduler = new Scheduler();
+
+// This will use the default directory path
+$scheduler->php('script.php')->onlyOne();
+
+$scheduler->php('script.php')->onlyOne('path/to/my/tmp/dir');
+$scheduler->php('other_script.php')->onlyOne('path/to/my/other/tmp/dir');
+```
+
+In some cases you might want to run the job also if it's overlapping.
+For example if the last execution was more that 5 minutes ago.
+You can pass a function as a second parameter, the last execution time will be injected.
+The job will not run until this function returns `false`. If it returns `true`, the job will run if overlapping.
+
+```php
+$scheduler->php('script.php')->onlyOne(null, function ($lastExecutionTime) {
+    return (time() - $lastExecutionTime) > (60 * 5);
+});
+```
+
+### After job execution
+
+Sometime you might wish to do something after a job runs. The `after` methods provides you the flexibility to do anything you want after the job execution. The output of the job will be injected to this function.
+For example you might want to add an entry to you logs, ping a url etc...
+By default, the job will be forced to run in foreground (because the output is injected to the function), if you don't need the output, you can pass `true` as a second parameter to allow the execution in background (in this case `$output` will be empty).
+
+```php
+$scheduler->php('script.php')->after(function ($output) use ($logger, $messenger) {
+    $logger->info($output);
+
+    $messenger->ping('myurl.com', $output);
+});
+
+$scheduler->php('script.php')->after(function ($output) {
+    log('Job executed!');
+}, true);
+```

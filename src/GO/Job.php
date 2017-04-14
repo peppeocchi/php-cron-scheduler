@@ -1,6 +1,5 @@
 <?php namespace GO;
 
-use Closure;
 use DateTime;
 use Exception;
 use InvalidArgumentException;
@@ -11,41 +10,58 @@ class Job
         Traits\Mailer;
 
     /**
+     * Job identifier.
+     *
      * @var string
      */
     private $id;
 
     /**
+     * Command to execute.
+     *
      * @var mixed
      */
     private $command;
 
     /**
+     * Arguments to be passed to the command.
+     *
      * @var array
      */
     private $args = [];
 
     /**
+     * Defines if the job should run in background.
+     *
      * @var bool
      */
     private $runInBackground = true;
 
     /**
+     * Creation time.
+     *
      * @var DateTime
      */
     private $creationTime;
 
     /**
+     * Job schedule time.
+     *
      * @var CronExpression
      */
     private $executionTime;
 
     /**
+     * Temporary directory path for
+     * lock files to prevent overlapping.
+     *
      * @var string
      */
     private $tempDir;
 
     /**
+     * Path to the lock file.
+     *
      * @var string
      */
     private $lockFile;
@@ -59,19 +75,47 @@ class Job
     private $truthTest = true;
 
     /**
+     * The output of the executed job.
+     *
+     * @var mixex
+     */
+    private $output;
+
+    /**
+     * Files to write the output of the job.
+     *
      * @var array
      */
     private $outputTo = [];
 
     /**
+     * Email addresses where the output should be sent to.
+     *
      * @var array
      */
     private $emailTo = [];
 
     /**
+     * Configuration for email sending.
+     *
      * @var array
      */
     private $emailConfig = [];
+
+    /**
+     * A function to execute after the job is executed.
+     *
+     * @var callable
+     */
+    private $after;
+
+    /**
+     * A function to ignore an overlapping job.
+     * If true, the job will run also if it's overlapping.
+     *
+     * @var callable
+     */
+    private $whenOverlapping;
 
     /**
      * @var Swift_Mailer
@@ -79,16 +123,11 @@ class Job
     private $mailer;
 
     /**
-     * @var Messenger
-     */
-    private $messenger;
-
-    /**
      * Create a new Job instance.
      *
-     * @param  string\Closure  $command
-     * @param  array  $args
-     * @param  string  $id
+     * @param  string\callable  $command
+     * @param  array            $args
+     * @param  string           $id
      * @return void
      */
     public function __construct($command, $args = [], $id = null)
@@ -104,6 +143,8 @@ class Job
         }
 
         $this->creationTime = new DateTime('now');
+
+        // initialize the directory path for lock files
         $this->tempDir = sys_get_temp_dir();
 
         $this->command = $command;
@@ -122,6 +163,9 @@ class Job
 
     /**
      * Check if the Job is due to run.
+     * It accepts as input a DateTime used to check if
+     * the job is due. Defaults to job creation time.
+     * It also default the execution time if not previously defined
      *
      * @param  DateTime  $date
      * @return bool
@@ -141,12 +185,13 @@ class Job
     /**
      * Check if the Job is overlapping.
      *
-     * @param  string  $tempDir
      * @return bool
      */
     public function isOverlapping()
     {
-        return $this->lockFile && file_exists($this->lockFile);
+        return $this->lockFile &&
+               file_exists($this->lockFile) &&
+               call_user_func($this->whenOverlapping, filemtime($this->lockFile)) === false;
     }
 
     /**
@@ -179,10 +224,13 @@ class Job
      * This will prevent the Job from overlapping.
      * It prevents another instance of the same Job of
      * being executed if the previous is still running.
+     * The job id is used as a filename for the lock file.
      *
+     * @param  string    $tempDir          The directory path for the lock files
+     * @param  callable  $whenOverlapping  A callback to ignore job overlapping
      * @return this
      */
-    public function onlyOne($tempDir = null)
+    public function onlyOne($tempDir = null, callable $whenOverlapping = null)
     {
         if ($tempDir === null || ! is_dir($tempDir)) {
             $tempDir = $this->tempDir;
@@ -192,6 +240,14 @@ class Job
             trim($tempDir),
             trim($this->id) . '.lock',
         ]);
+
+        if ($whenOverlapping) {
+            $this->whenOverlapping = $whenOverlapping;
+        } else {
+            $this->whenOverlapping = function () {
+                return false;
+            };
+        }
 
         return $this;
     }
@@ -205,7 +261,7 @@ class Job
     {
         $compiled = $this->command;
 
-        // If Closure, return the Closure itself
+        // If callable, return the function itself
         if (is_callable($compiled)) {
             return $compiled;
         }
@@ -244,6 +300,12 @@ class Job
         return trim($compiled);
     }
 
+    /**
+     * Configure the job.
+     *
+     * @param  array  $config
+     * @return this
+     */
     public function configure(array $config = [])
     {
         if (isset($config['email'])) {
@@ -262,11 +324,12 @@ class Job
     }
 
     /**
-     * Truth test
+     * Truth test to define if the job should run if due.
      *
-     * @return bool
+     * @param  callable  $fn
+     * @return this
      */
-    public function when(Closure $fn)
+    public function when(callable $fn)
     {
         $this->truthTest = $fn();
 
@@ -274,7 +337,7 @@ class Job
     }
 
     /**
-     * Run the Job.
+     * Run the job.
      *
      * @return bool
      */
@@ -296,16 +359,22 @@ class Job
         $this->createLockFile();
 
         if (is_callable($compiled)) {
-            $this->exec($compiled);
+            $this->output = $this->exec($compiled);
         } else {
-            exec($compiled);
+            $this->output = exec($compiled);
         }
 
-        $this->emailOutput();
+        $this->finalise();
 
         return true;
     }
 
+    /**
+     * Create the job lock file.
+     *
+     * @param  mixed  $content
+     * @return void
+     */
     private function createLockFile($content = null)
     {
         if ($this->lockFile) {
@@ -317,6 +386,11 @@ class Job
         }
     }
 
+    /**
+     * Remove the job lock file.
+     *
+     * @return void
+     */
     private function removeLockFile()
     {
         if ($this->lockFile && file_exists($this->lockFile)) {
@@ -325,12 +399,12 @@ class Job
     }
 
     /**
-     * Execute a function.
+     * Execute a callable job.
      *
-     * @param  Closure  $fn
-     * @return void
+     * @param  callable  $fn
+     * @return string
      */
-    private function exec(Closure $fn)
+    private function exec(callable $fn)
     {
         ob_start();
 
@@ -354,13 +428,15 @@ class Job
         }
 
         $this->removeLockFile();
+
+        return $outputBuffer . (is_string($returnData) ? $returnData : '');
     }
 
     /**
-     * Write the output of the Job to file/s.
+     * Set the file/s where to write the output of the job.
      *
      * @param  string\array  $filename
-     * @param  bool  $append
+     * @param  bool          $append
      * @return this
      */
     public function output($filename, $append = false)
@@ -372,7 +448,17 @@ class Job
     }
 
     /**
-     * Sends the output to email/s.
+     * Get the job output.
+     *
+     * @return mixed
+     */
+    public function getOutput()
+    {
+        return $this->output;
+    }
+
+    /**
+     * Set the emails where the output should be sent to.
      * The Job should be set to write output to a file
      * for this to work.
      *
@@ -382,7 +468,7 @@ class Job
     public function email($email)
     {
         if (! is_string($email) && ! is_array($email)) {
-            throw new InvalidArgumentException("Email can be only string or array");
+            throw new InvalidArgumentException("The email can be only string or array");
         }
 
         $this->emailTo = is_array($email) ? $email : [$email];
@@ -393,6 +479,27 @@ class Job
         return $this;
     }
 
+    /**
+     * Finilise the job after execution.
+     *
+     * @return void
+     */
+    private function finalise()
+    {
+        // Send output to email
+        $this->emailOutput();
+
+        // Call any callback defined
+        if (is_callable($this->after)) {
+            call_user_func($this->after, $this->output);
+        }
+    }
+
+    /**
+     * Email the output of the job, if any.
+     *
+     * @return void
+     */
     private function emailOutput()
     {
         if (! count($this->outputTo) || ! count($this->emailTo)) {
@@ -402,11 +509,27 @@ class Job
         $this->sendToEmails($this->outputTo);
     }
 
-    // public function ping($url, $method = 'GET', array $config = [])
-    // {
-    //     $this->messenger = new Messenger($url, $method, $config);
+    /**
+     * Set a function to be called after job execution.
+     * By default this will force the job to run in foreground
+     * because the output is injected as a parameter of this
+     * function, but it could be avoided by passing true as a
+     * second parameter. The job will run in background if it
+     * meets all the other criteria.
+     *
+     * @param  callable  $fn
+     * @param  bool      $runInBackground
+     * @return this
+     */
+    public function then(callable $fn, $runInBackground = false)
+    {
+        $this->after = $fn;
 
-    //     // Set the job to run in foreground
-    //     $this->inForeground();
-    // }
+        // Force the job to run in foreground
+        if ($runInBackground === false) {
+            $this->inForeground();
+        }
+
+        return $this;
+    }
 }

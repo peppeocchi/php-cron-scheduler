@@ -1,6 +1,5 @@
 <?php namespace GO;
 
-use Closure;
 use DateTime;
 use Exception;
 use InvalidArgumentException;
@@ -81,12 +80,12 @@ class Scheduler
     /**
      * Queues a function execution.
      *
-     * @param  Closure  $fn  The function to execute
+     * @param  callable  $fn  The function to execute
      * @param  array  $args  Optional arguments to pass to the php script
      * @param  string  $id   Optional custom identifier
      * @return Job
      */
-    public function call(Closure $fn, $args = [], $id = null)
+    public function call(callable $fn, $args = [], $id = null)
     {
         $job = new Job($fn, $args, $id);
 
@@ -183,7 +182,7 @@ class Scheduler
 
         $compiled = $job->compile();
 
-        // If Closure, log the string Closure
+        // If callable, log the string Closure
         if (is_callable($compiled)) {
             $compiled = 'Closure';
         }
@@ -214,7 +213,7 @@ class Scheduler
 
         $compiled = $job->compile();
 
-        // If Closure, log the string Closure
+        // If callable, log the string Closure
         if (is_callable($compiled)) {
             $compiled = 'Closure';
         }

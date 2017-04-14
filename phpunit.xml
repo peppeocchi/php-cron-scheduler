@@ -19,7 +19,7 @@
     </php>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory>src</directory>
+            <directory>src/GO</directory>
         </whitelist>
     </filter>
 </phpunit>

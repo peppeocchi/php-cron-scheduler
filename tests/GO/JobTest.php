@@ -276,6 +276,29 @@ class JobTest extends TestCase
         $this->assertTrue($job->run());
     }
 
+    public function testShouldRunIfOverlappingCallbackReturnsTrue()
+    {
+        $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
+        $job = new Job($command);
+
+        $this->assertFalse($job->isOverlapping());
+
+        $tmpDir = __DIR__.'/../tmp';
+
+        $job->onlyOne($tmpDir, function ($lastExecution) {
+            return time() - $lastExecution > 2;
+        })->run();
+
+        // The job should not run as it is overlapping
+        $this->assertFalse($job->run());
+        sleep(3);
+        // The job should run now as the function should now return true,
+        // while it's still being executed
+        $lockFile = $tmpDir.'/'.$job->getId().'.lock';
+        $this->assertTrue(file_exists($lockFile));
+        $this->assertTrue($job->run());
+    }
+
     public function testShouldAcceptTempDirInConfiguration()
     {
         $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
@@ -317,5 +340,94 @@ class JobTest extends TestCase
         $this->assertTrue($job->when(function () {
             return true;
         })->run());
+    }
+
+    public function testShouldReturnOutputOfJobExecution()
+    {
+        $job1 = new Job(function () {
+            echo 'hi';
+        });
+        $job1->run();
+        $this->assertEquals('hi', $job1->getOutput());
+
+        $job2 = new Job(function () {
+            return 'hello';
+        });
+        $job2->run();
+        $this->assertEquals('hello', $job2->getOutput());
+
+        $command = PHP_BINARY.' '.__DIR__.'/../test_job.php';
+        $job3 = new Job($command);
+        $job3->inForeground()->run();
+        $this->assertEquals('hi', $job3->getOutput());
+    }
+
+    public function testShouldRunCallbackAfterJobExecution()
+    {
+        $job = new Job(function () {
+            $visitors = 1000;
+            return 'Daily visitors: ' . $visitors;
+        });
+
+        $jobResult = null;
+
+        $job->then(function ($output) use (&$jobResult) {
+            $jobResult = $output;
+        })->run();
+
+        $this->assertEquals($jobResult, $job->getOutput());
+
+        $command = PHP_BINARY.' '.__DIR__.'/../test_job.php';
+        $job2 = new Job($command);
+
+        $job2Result = null;
+
+        $job2->then(function ($output) use (&$job2Result) {
+            $job2Result = $output;
+        }, true)->run();
+
+        // Commands in background should return an empty string
+        $this->assertTrue(empty($job2Result));
+
+        $job2Result = null;
+        $job2->then(function ($output) use (&$job2Result) {
+            $job2Result = $output;
+        })->inForeground()->run();
+        $this->assertTrue(! empty($job2Result) &&
+            $job2Result === $job2->getOutput());
+    }
+
+    public function testThenMethodShouldBeChainable()
+    {
+        $job = new Job('ls');
+
+        $this->assertInstanceOf(Job::class, $job->then(function () {
+            return true;
+        }));
+    }
+
+    public function testShouldDefaultExecutionInForegroundIfMethodThenIsDefined()
+    {
+        $job = new Job('ls');
+
+        $job->then(function () {
+            return true;
+        });
+
+        $this->assertFalse($job->canRunInBackground());
+    }
+
+    public function testShouldAllowForcingTheJobToRunInBackgroundIfMethodThenIsDefined()
+    {
+        // This is a use case when you want to execute a callback every time your
+        // job is executed, but you don't care about the output of the job
+
+        $job = new Job('ls');
+
+        $job->then(function () {
+            return true;
+        }, true);
+
+        $this->assertTrue($job->canRunInBackground());
     }
 }
