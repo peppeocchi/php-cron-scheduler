@@ -21,6 +21,7 @@
         "mtdowling/cron-expression": "~1.0"
     },
     "require-dev": {
+        "php" : "^7.0",
         "phpunit/phpunit": "^6.0",
         "swiftmailer/swiftmailer": "~5.4"
     },
