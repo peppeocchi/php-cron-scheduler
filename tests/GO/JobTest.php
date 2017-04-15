@@ -315,11 +315,6 @@ class JobTest extends TestCase
         $this->assertTrue(file_exists($tmpDir . '/' . $job->getId() . '.lock'));
     }
 
-    // public function testShouldNotRunIfPreviousJobIsRunning()
-    // {
-
-    // }
-
     public function testWhenMethodShouldBeChainable()
     {
         $job = new Job('ls');

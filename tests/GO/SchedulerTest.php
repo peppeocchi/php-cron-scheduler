@@ -236,4 +236,20 @@ class SchedulerTest extends TestCase
 
         $scheduler->getVerboseOutput('multiline');
     }
+
+    public function testShouldPrioritizeJobsInBackround()
+    {
+        $scheduler = new Scheduler();
+
+        $scheduler->php(__DIR__.'/../async_job.php', null, null, 'async_foreground')->then(function () {
+            return true;
+        });
+
+        $scheduler->php(__DIR__.'/../async_job.php', null, null, 'async_background');
+
+        $jobs = $scheduler->getQueuedJobs();
+
+        $this->assertEquals('async_background', $jobs[0]->getId());
+        $this->assertEquals('async_foreground', $jobs[1]->getId());
+    }
 }

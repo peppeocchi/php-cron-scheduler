@@ -7,18 +7,11 @@ use InvalidArgumentException;
 class Scheduler
 {
     /**
-     * The jobs that can run in background.
+     * The queued jobs.
      *
      * @var array
      */
-    private $backgroundJobs = [];
-
-    /**
-     * The jobs that have to run in foreground.
-     *
-     * @var array
-     */
-    private $foregroundJobs = [];
+    private $jobs = [];
 
     /**
      * Successfully executed jobs.
@@ -60,11 +53,23 @@ class Scheduler
      */
     private function queueJob(Job $job)
     {
-        if ($job->canRunInBackground()) {
-            $this->backgroundJobs[] = $job;
-        } else {
-            $this->foregroundJobs[] = $job;
-        }
+        $this->jobs[] = $job;
+    }
+
+    /**
+     * Prioritise jobs in background.
+     *
+     * @return array
+     */
+    private function prioritiseJobs()
+    {
+        $jobs = $this->jobs;
+
+        usort($jobs, function ($a, $b) {
+            return $b->canRunInBackground();
+        });
+
+        return $jobs;
     }
 
     /**
@@ -74,7 +79,7 @@ class Scheduler
      */
     public function getQueuedJobs()
     {
-        return array_merge($this->backgroundJobs, $this->foregroundJobs);
+        return $this->prioritiseJobs();
     }
 
     /**
