@@ -1,4 +1,4 @@
 <?php
 
 sleep(5);
-echo "done";
+echo 'hi';

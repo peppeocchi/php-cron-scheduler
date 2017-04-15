@@ -1,274 +1,266 @@
 <?php namespace GO;
 
+use DateTime;
+use Exception;
 use InvalidArgumentException;
-
-use GO\Job\JobFactory;
-use GO\Services\Filesystem;
 
 class Scheduler
 {
+    /**
+     * The queued jobs.
+     *
+     * @var array
+     */
+    private $jobs = [];
 
-  /**
-   * Timezone
-   *
-   * @var string
-   */
-  private $timezone = 'Europe/Dublin';
+    /**
+     * Successfully executed jobs.
+     *
+     * @var array
+     */
+    private $executedJobs = [];
 
-  /**
-   * The scheduled jobs
-   *
-   * @var array of GO\Job\Job
-   */
-  private $jobs = [];
+    /**
+     * Failed jobs.
+     *
+     * @var array
+     */
+    private $failedJobs = [];
 
-  /**
-   * The executed jobs
-   *
-   * @var array of GO\Job\Job
-   */
-  private $executed = [];
+    /**
+     * The verbose output of the scheduled jobs.
+     *
+     * @var array
+     */
+    private $outputSchedule = [];
 
-  /**
-   * The scheduler start time
-   *
-   * @var int
-   */
-  private $time;
-
-  /**
-   * Global config for the jobs
-   *
-   * @var array
-   */
-  private $config;
-
-
-  /**
-   * Create a new Scheduler instance and keep optional jobs config.
-   *
-   * @param array $config
-   * @return void
-   */
-  public function __construct(array $config = [])
-  {
-    if (isset($config['tempDir']) &&
-        (! is_dir($config['tempDir']) || ! is_writable($config['tempDir']))
-    ) {
-      throw new InvalidArgumentException("{$config['tempDir']} does not exits or is not writable.");
+    /**
+     * Create new instance.
+     *
+     * @param  array  $config
+     * @return void
+     */
+    public function __construct(array $config = [])
+    {
+        $this->config = $config;
     }
 
-    $this->useConfig($config);
+    /**
+     * Queue a job for execution in the correct queue.
+     *
+     * @param  Job  $job
+     * @return void
+     */
+    private function queueJob(Job $job)
+    {
+        $this->jobs[] = $job;
+    }
 
-    $this->time = time();
-  }
+    /**
+     * Prioritise jobs in background.
+     *
+     * @return array
+     */
+    private function prioritiseJobs()
+    {
+        $background = [];
+        $foreground = [];
 
-  /**
-   * Switch between configurations.
-   *
-   * @param array $config
-   * @return $this
-   */
-  public function useConfig(array $config)
-  {
-    $this->config = $config;
-
-    return $this;
-  }
-
-  /**
-   * Get current configuration.
-   *
-   * @return array
-   */
-  public function getConfig()
-  {
-    return $this->config;
-  }
-
-  /**
-   * Get jobs.
-   *
-   * @return array
-   */
-  public function getJobs()
-  {
-    return $this->jobs;
-  }
-
-  /**
-   * Get executed jobs.
-   *
-   * @return array
-   */
-  public function getExecutedJobs()
-  {
-    return $this->executed;
-  }
-
-  /**
-   * Set the timezone.
-   *
-   * @param string $timezone
-   * @return void
-   */
-  public function setTimezone($timezone)
-  {
-    $this->config['timezone'] = $timezone;
-  }
-
-  /**
-   * Get the directory for temporary files (job locks).
-   *
-   * @return string
-   */
-  public function getTempDir()
-  {
-    return isset($this->config['tempDir']) ? $this->config['tempDir'] : sys_get_temp_dir();
-  }
-
-  /**
-   * PHP job.
-   *
-   * @param string $command
-   * @param array $args
-   * @return instance of GO\Job\Job
-   */
-  public function php($command, array $args = [])
-  {
-    return $this->jobs[] = JobFactory::factory(\GO\Job\Php::class, $command, $args);
-  }
-
-  /**
-   * I'm feeling lucky
-   * -----------------
-   * Guess the job to run by the file extension
-   *
-   * @param string $command
-   * @param array $args
-   * @return instance of GO\Job\Job
-   */
-  private function command($command, array $args = [])
-  {
-    $file = basename($command);
-  }
-
-  /**
-   * Raw job
-   *
-   * @param string $command
-   * @return instance of GO\Job\Job
-   */
-  public function raw($command)
-  {
-    return $this->jobs[] = JobFactory::factory(\GO\Job\Raw::class, $command);
-  }
-
-  /**
-   * Ping url
-   *
-   * @param string $url
-   * @return instance of GO\Job\Job
-   */
-  public function ping($command)
-  {
-    return false;
-    return $this->jobs[] = JobFactory::factory(\GO\Job\Ping::class, $command);
-  }
-
-  /**
-   * Closure job
-   *
-   * @param callable $closure
-   * @param array $args
-   * @param string $commandId
-   * @return instance of GO\Job\Job
-   */
-  public function call($closure, $args = [], $commandId = null)
-  {
-    return $this->jobs[] = JobFactory::factory(\GO\Job\Closure::class, $closure, $args, $commandId);
-  }
-
-  /**
-   * Move the jobs that can run in background on top of the array
-   * This is done to avoid blocking jobs that can slow down the
-   * execution of other jobs
-   *
-   * @return void
-   */
-  public function jobsInBackgroundFirst()
-  {
-    usort($this->jobs, function ($a, $b) {
-      return $b->runInBackground - $a->runInBackground;
-    });
-  }
-
-  /**
-   * Run the scheduled jobs
-   *
-   * @return array - The output of the executed jobs
-   */
-  public function run()
-  {
-    $output = [];
-
-    // First reorder the cronjobs
-    $this->jobsInBackgroundFirst();
-
-    foreach ($this->jobs as $job) {
-      $job->setup($this->config);
-      // Check if job is due and if it should prevent overlapping
-      if ($job->isDue()) {
-
-        if ($job->preventOverlap() !== false) {
-
-          // If overlapping, skip job execution
-          if (! $this->jobCanRun($job)) {
-            continue;
-          }
-          // Create lock file for this job to prevent overlap
-          $lockFile = implode('/', [$this->getTempDir(), md5($job->getCommandId()) . '.lock']);
-          $lockFileContent = '';
-          if(isset($this->config['verboseLockFile']) && $this->config['verboseLockFile'] == true)
-              $lockFileContent = $job->getCommandId();
-          Filesystem::write($lockFileContent, $lockFile);
-          // Sets the file to remove after the execution
-          $job->removeLockAfterExec($lockFile);
+        foreach ($this->jobs as $job) {
+            if ($job->canRunInBackground()) {
+                $background[] = $job;
+            } else {
+                $foreground[] = $job;
+            }
         }
 
-        $output[] = $job->exec();
-        $this->executed[] = $job;
-      }
+        return array_merge($background, $foreground);
     }
 
-    return $output;
-  }
-
-  /**
-   * Check if the job is not overlapping.
-   * If overlapping and a callback has been provided,
-   * the result of that function will decide if the job can overlap.
-   *
-   * @param \GO\Job\Job $job
-   * @return bool
-   */
-  private function jobCanRun(\GO\Job\Job $job)
-  {
-    // Check if file exists, if not return true
-    $lockFile = implode('/', [$this->getTempDir(), md5($job->getCommandId()) . '.lock']);
-    if (! file_exists($lockFile)) {
-      return true;
+    /**
+     * Get the queued jobs.
+     *
+     * @return array
+     */
+    public function getQueuedJobs()
+    {
+        return $this->prioritiseJobs();
     }
 
-    // Return false if no callback was specified
-    if ($job->preventOverlap() === true) {
-      return false;
+    /**
+     * Queues a function execution.
+     *
+     * @param  callable  $fn  The function to execute
+     * @param  array  $args  Optional arguments to pass to the php script
+     * @param  string  $id   Optional custom identifier
+     * @return Job
+     */
+    public function call(callable $fn, $args = [], $id = null)
+    {
+        $job = new Job($fn, $args, $id);
+
+        $this->queueJob($job->configure($this->config));
+
+        return $job;
     }
 
-    $filetime = filemtime($lockFile);
-    $callback = $job->preventOverlap();
+    /**
+     * Queues a php script execution.
+     *
+     * @param  string  $script  The path to the php script to execute
+     * @param  string  $bin     Optional path to the php binary
+     * @param  array  $args     Optional arguments to pass to the php script
+     * @param  string  $id      Optional custom identifier
+     * @return Job
+     */
+    public function php($script, $bin = null, $args = [], $id = null)
+    {
+        $bin = $bin !== null && is_string($bin) && file_exists($bin) ?
+            $bin : PHP_BINARY === '' ? '/usr/bin/php' : PHP_BINARY;
 
-    return ! $callback($filetime);
-  }
+        $job = new Job($bin . ' ' . $script, $args, $id);
 
+        $this->queueJob($job->configure($this->config));
+
+        return $job;
+    }
+
+    /**
+     * Queue a raw shell command.
+     *
+     * @param  string  $command  The command to execute
+     * @param  array  $args      Optional arguments to pass to the command
+     * @param  string  $id       Optional custom identifier
+     * @return Job
+     */
+    public function raw($command, $args = [], $id = null)
+    {
+        $job = new Job($command, $args, $id);
+
+        $this->queueJob($job->configure($this->config));
+
+        return $job;
+    }
+
+    /**
+     * Run the scheduler.
+     *
+     * @return array  Executed jobs
+     */
+    public function run()
+    {
+        $jobs = $this->getQueuedJobs();
+
+        foreach ($jobs as $job) {
+            if ($job->isDue()) {
+                try {
+                    $job->run();
+                    $this->pushExecutedJob($job);
+                } catch (\Exception $e) {
+                    $this->pushFailedJob($job, $e);
+                }
+            }
+        }
+
+        return $this->getExecutedJobs();
+    }
+
+    /**
+     * Add an entry to the scheduler verbose output array.
+     *
+     * @param  string  $string
+     * @return void
+     */
+    private function addSchedulerVerboseOutput($string)
+    {
+        $now = '[' . (new DateTime('now'))->format('c') . '] ';
+        $this->outputSchedule[] = $now . $string;
+
+        // Print to stdoutput in light gray
+        // echo "\033[37m{$string}\033[0m\n";
+    }
+
+    /**
+     * Push a succesfully executed job.
+     *
+     * @param  Job  $job
+     * @return Job
+     */
+    private function pushExecutedJob(Job $job)
+    {
+        $this->executedJobs[] = $job;
+
+        $compiled = $job->compile();
+
+        // If callable, log the string Closure
+        if (is_callable($compiled)) {
+            $compiled = 'Closure';
+        }
+
+        $this->addSchedulerVerboseOutput("Executing {$compiled}");
+    }
+
+    /**
+     * Get the executed jobs.
+     *
+     * @return array
+     */
+    public function getExecutedJobs()
+    {
+        return $this->executedJobs;
+    }
+
+    /**
+     * Push a failed job.
+     *
+     * @param  Job  $job
+     * @param  Exception  $e
+     * @return Job
+     */
+    private function pushFailedJob(Job $job, Exception $e)
+    {
+        $this->failedJobs[] = $job;
+
+        $compiled = $job->compile();
+
+        // If callable, log the string Closure
+        if (is_callable($compiled)) {
+            $compiled = 'Closure';
+        }
+
+        $this->addSchedulerVerboseOutput("{$e->getMessage()}: {$compiled}");
+    }
+
+    /**
+     * Get the failed jobs.
+     *
+     * @return array
+     */
+    public function getFailedJobs()
+    {
+        return $this->failedJobs;
+    }
+
+    /**
+     * Get the scheduler verbose output.
+     *
+     * @param  string  $type  Allowed: text, html, array
+     * @return mixed  The return depends on the requested $type
+     */
+    public function getVerboseOutput($type = 'text')
+    {
+        switch ($type) {
+            case 'text':
+                return implode("\n", $this->outputSchedule);
+
+            case 'html':
+                return implode("<br>", $this->outputSchedule);
+
+            case 'array':
+                return $this->outputSchedule;
+
+            default:
+                throw new InvalidArgumentException('Invalid output type');
+        }
+    }
 }

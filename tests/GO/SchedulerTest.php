@@ -1,243 +1,255 @@
 <?php namespace GO\Job\Tests;
 
 use GO\Scheduler;
+use PHPUnit\Framework\TestCase;
 
-class SchedulerTest extends \PHPUnit_Framework_TestCase
+class SchedulerTest extends TestCase
 {
-  public function testShouldLoadConfigOnConstruct()
-  {
-    $config = ['test' => 'this is a test'];
-    $scheduler = new Scheduler($config);
+    public function testShouldQueueJobs()
+    {
+        $scheduler = new Scheduler();
 
-    $this->assertEquals($config, $scheduler->getConfig());
-  }
+        $this->assertEquals(count($scheduler->getQueuedJobs()), 0);
 
-  public function testShouldSwitchConfig()
-  {
-    $config = ['test' => 'this is a test'];
-    $scheduler = new Scheduler();
-    $scheduler->useConfig($config);
+        $scheduler->raw('ls');
 
-    $this->assertEquals($config, $scheduler->getConfig());
-  }
-
-  public function testShouldHaveNoJobOnConstruct()
-  {
-    $scheduler = new Scheduler();
-
-    $this->assertEmpty($scheduler->getJobs());
-  }
-
-  public function testShouldPushJobs()
-  {
-    $scheduler = new Scheduler();
-    $scheduler->php('some command');
-
-    $this->assertEquals(1, count($scheduler->getJobs()));
-  }
-
-  public function testShouldExecuteJobsInBackgroundFirst()
-  {
-    $closure = function ($nums) {
-      return array_sum($nums);
-    };
-    $scheduler = new Scheduler();
-    $scheduler->call($closure)->at('* * * * *');
-    $scheduler->raw('echo "raw command"')->at('* * * * *');
-
-    $scheduler->jobsInBackgroundFirst();
-
-    $jobs = $scheduler->getJobs();
-
-    $this->assertTrue($jobs[0]->runInBackground);
-  }
-
-  public function testShouldNotExecuteJobsBeforeRun()
-  {
-    $scheduler = new Scheduler();
-    $scheduler->raw('echo "raw command"')->at('* * * * *');
-    $scheduler->raw('echo "raw command 2"')->at('* * * 1970 *');
-
-    $this->assertEmpty($scheduler->getExecutedJobs());
-  }
-
-  public function testShouldExecuteOnlyDueJobs()
-  {
-    $scheduler = new Scheduler();
-    $scheduler->raw('echo "raw command"')->at('* * * * *');
-    $scheduler->raw('echo "raw command 2"')->at('* * * 1970 *');
-
-    $scheduler->run();
-
-    $this->assertEquals(1, count($scheduler->getExecutedJobs()));
-  }
-
-  /**
-   * @expectedException InvalidArgumentException
-   */
-  public function testShouldThrowExceptionIfTempDirNotExists()
-  {
-    $scheduler = new Scheduler([
-      'tempDir' => 'someinvalid/path'
-    ]);
-  }
-
-  /**
-   * @expectedException InvalidArgumentException
-   */
-  public function testShouldThrowExceptionIfTempDirIsNotWritable()
-  {
-    $tempDir = __DIR__ . '/../non_writable/';
-    chmod($tempDir, 0555);
-
-    $scheduler = new Scheduler([
-      'tempDir' => $tempDir
-    ]);
-  }
-
-  public function testShouldOverlapIfCallbackReturnsFalse()
-  {
-    $scheduler = new Scheduler([
-      'tempDir' => __DIR__ . '/../tmp'
-    ]);
-
-    $script = __DIR__.'/../test_overlap.php';
-
-    $job = $scheduler->php($script)->at('* * * * *')->doNotOverlap(function() {
-      return false;
-    });
-
-    $scheduler->run();
-
-    $this->assertEquals(1, count($scheduler->getExecutedJobs()));
-  }
-
-  public function testShouldCreateLockFileToNotOverlap()
-  {
-    $scheduler = new Scheduler([
-      'tempDir' => __DIR__ . '/../tmp'
-    ]);
-
-    $script = __DIR__.'/../test_overlap.php';
-
-    $job = $scheduler->php($script)->at('* * * * *')->doNotOverlap();
-
-    $scheduler->run();
-    $expectedFile = implode('/', [$scheduler->getTempDir(), md5($job->getCommand()) . '.lock']);
-
-    $this->assertTrue(file_exists($expectedFile));
-  }
-
-  public function testShouldRemoveLockFileAfterRun()
-  {
-    $scheduler = new Scheduler([
-      'tempDir' => __DIR__ . '/../tmp'
-    ]);
-
-    $script = __DIR__.'/../test_overlap.php';
-
-    $job = $scheduler->php($script)->at('* * * * *')->doNotOverlap();
-
-    $scheduler->run();
-    $expectedFile = implode('/', [$scheduler->getTempDir(), md5($job->getCommand()) . '.lock']);
-    sleep(6);
-
-    $this->assertTrue(! file_exists($expectedFile));
-  }
-
-  public function testShouldNotExecuteJobIfLockFileExists()
-  {
-    $scheduler = new Scheduler([
-      'tempDir' => __DIR__ . '/../tmp'
-    ]);
-
-    $script = __DIR__.'/../test_overlap.php';
-
-    $job = $scheduler->php($script)->at('* * * * *')->doNotOverlap();
-
-    $path = implode('/', [$scheduler->getTempDir(), md5($job->getCommand()) . '.lock']);
-    touch($path);
-
-    $scheduler->run();
-
-    $this->assertEquals(0, count($scheduler->getExecutedJobs()));
-
-    unlink($path);
-  }
-
-  public function testVerboseLockFileShouldWriteCommandToLockFile()
-  {
-    $scheduler = new Scheduler([
-      'tempDir' => __DIR__ . '/../tmp',
-      'verboseLockFile' => true
-    ]);
-
-    $commandId = 'FooBar';
-    $path = implode('/', [$scheduler->getTempDir(), md5($commandId) . '.lock']);
-
-    $scheduler->call(function() use ($commandId, $path){
-        $lockFileContent = trim(file_get_contents($path));
-        $this->assertEquals($commandId, $lockFileContent);
-      }, [], $commandId)
-      ->at('* * * * *')
-      ->doNotOverlap();
-
-    try {
-      $scheduler->run();
-    } catch(\PHPUnit_Framework_AssertionFailedError $e){
-      throw $e;
+        $this->assertEquals(count($scheduler->getQueuedJobs()), 1);
     }
-  }
 
-  public function testGetCommandAndGetCommandIdShouldReturnSameValue()
-  {
-    $scheduler = new Scheduler([
-      'tempDir' => __DIR__ . '/../tmp'
-    ]);
+    public function testShouldQueueAPhpScript()
+    {
+        $scheduler = new Scheduler();
 
-    $script = __DIR__.'/../test_overlap.php';
+        $script = __DIR__.'/../test_job.php';
 
-    $job = $scheduler->php($script)->at('* * * * *');
+        $this->assertEquals(count($scheduler->getQueuedJobs()), 0);
 
-    $this->assertEquals($job->getCommand(), $job->getCommandId());
+        $scheduler->php($script);
 
-    $closure = $scheduler->call(function () {
-      return true;
-    })->at('* * * * *');
+        $this->assertEquals(count($scheduler->getQueuedJobs()), 1);
+    }
 
-    $this->assertEquals($closure->getCommand(), $closure->getCommandId());
-  }
+    public function testShouldQueueAShellCommand()
+    {
+        $scheduler = new Scheduler();
 
-  public function testShouldCreatedHashStringFromClosure()
-  {
-    $scheduler = new Scheduler([
-      'tempDir' => __DIR__ . '/../tmp'
-    ]);
+        $this->assertEquals(count($scheduler->getQueuedJobs()), 0);
 
-    $fn = function () {
-      return true;
-    };
+        $scheduler->raw('ls');
 
-    $job = $scheduler->call($fn)->at('* * * * *')->doNotOverlap();
+        $this->assertEquals(count($scheduler->getQueuedJobs()), 1);
+    }
 
-    $this->assertEquals($job->getCommandId(), spl_object_hash($fn));
-  }
+    public function testShouldQueueAFunction()
+    {
+        $scheduler = new Scheduler();
 
-  public function testShouldRemoveLockFileIfCallbackFails()
-  {
-    $scheduler = new Scheduler([
-      'tempDir' => __DIR__ . '/../tmp'
-    ]);
+        $this->assertEquals(count($scheduler->getQueuedJobs()), 0);
 
-    $fn = function () {
-      return preg_match($string);
-    };
+        $scheduler->call(function () {
+            return true;
+        });
 
-    $job = $scheduler->call($fn)->at('* * * * *')->doNotOverlap();
+        $this->assertEquals(count($scheduler->getQueuedJobs()), 1);
+    }
 
-    $scheduler->run();
-    $expectedFile = implode('/', [$scheduler->getTempDir(), md5($job->getCommandId()) . '.lock']);
+    public function testShouldKeepTrackOfExecutedJobs()
+    {
+        $scheduler = new Scheduler();
 
-    $this->assertTrue(! file_exists($expectedFile));
-  }
+        $scheduler->call(function () {
+            return true;
+        });
+
+        $this->assertEquals(count($scheduler->getQueuedJobs()), 1);
+        $this->assertEquals(count($scheduler->getExecutedJobs()), 0);
+
+        $scheduler->run();
+
+        $this->assertEquals(count($scheduler->getExecutedJobs()), 1);
+    }
+
+    public function testShouldPassParametersToAFunction()
+    {
+        $scheduler = new Scheduler();
+
+        $outputFile = __DIR__.'/../tmp/output.txt';
+        $scheduler->call(function ($phrase) {
+            return $phrase;
+        }, [
+            'Hello World!'
+        ])->output($outputFile);
+
+        @unlink($outputFile);
+
+        $this->assertFalse(file_exists($outputFile));
+
+        $scheduler->run();
+
+        $this->assertNotEquals('Hello', file_get_contents($outputFile));
+        $this->assertEquals('Hello World!', file_get_contents($outputFile));
+
+        @unlink($outputFile);
+    }
+
+    public function testShouldKeepTrackOfFailedJobs()
+    {
+        $scheduler = new Scheduler();
+
+        $scheduler->call(function () {
+            throw new \Exception("Something failed");
+        });
+
+        $this->assertEquals(count($scheduler->getFailedJobs()), 0);
+
+        $scheduler->run();
+
+        $this->assertEquals(count($scheduler->getExecutedJobs()), 0);
+        $this->assertEquals(count($scheduler->getFailedJobs()), 1);
+    }
+
+    public function testShouldKeepExecutingJobsIfOneFails()
+    {
+        $scheduler = new Scheduler();
+
+        $scheduler->call(function () {
+            throw new \Exception("Something failed");
+        });
+
+        $scheduler->call(function () {
+            return true;
+        });
+
+        $scheduler->run();
+
+        $this->assertEquals(count($scheduler->getExecutedJobs()), 1);
+        $this->assertEquals(count($scheduler->getFailedJobs()), 1);
+    }
+
+    public function testShouldInjectConfigToTheJobs()
+    {
+        $schedulerConfig = [
+            'email' => [
+                'subject' => 'My custom subject'
+            ]
+        ];
+        $scheduler = new Scheduler($schedulerConfig);
+
+        $job = $scheduler->raw('ls');
+
+        $this->assertEquals($job->getEmailConfig()['subject'], $schedulerConfig['email']['subject']);
+    }
+
+    public function testShouldPrioritizeJobConfigOverSchedulerConfig()
+    {
+        $schedulerConfig = [
+            'email' => [
+                'subject' => 'My custom subject'
+            ]
+        ];
+        $scheduler = new Scheduler($schedulerConfig);
+
+        $jobConfig = [
+            'email' => [
+                'subject' => 'My job subject'
+            ]
+        ];
+        $job = $scheduler->raw('ls')->configure($jobConfig);
+
+        $this->assertNotEquals($job->getEmailConfig()['subject'], $schedulerConfig['email']['subject']);
+        $this->assertEquals($job->getEmailConfig()['subject'], $jobConfig['email']['subject']);
+    }
+
+    public function testShouldShowClosuresVerboseOutputAsText()
+    {
+        $scheduler = new Scheduler();
+
+        $scheduler->call(function ($phrase) {
+            return $phrase;
+        }, [
+            'Hello World!'
+        ]);
+
+        $scheduler->run();
+
+        $this->assertRegexp('/ Executing Closure$/', $scheduler->getVerboseOutput());
+        $this->assertRegexp('/ Executing Closure$/', $scheduler->getVerboseOutput('text'));
+    }
+
+    public function testShouldShowClosuresVerboseOutputAsHtml()
+    {
+        $scheduler = new Scheduler();
+
+        $scheduler->call(function ($phrase) {
+            return $phrase;
+        }, [
+            'Hello World!'
+        ]);
+
+        $scheduler->call(function () {
+            return true;
+        });
+
+        $scheduler->run();
+
+        $this->assertRegexp('/<br>/', $scheduler->getVerboseOutput('html'));
+    }
+
+    public function testShouldShowClosuresVerboseOutputAsArray()
+    {
+        $scheduler = new Scheduler();
+
+        $scheduler->call(function ($phrase) {
+            return $phrase;
+        }, [
+            'Hello World!'
+        ]);
+
+        $scheduler->call(function () {
+            return true;
+        });
+
+        $scheduler->run();
+
+        $this->assertTrue(is_array($scheduler->getVerboseOutput('array')));
+        $this->assertEquals(count($scheduler->getVerboseOutput('array')), 2);
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testShouldThrowExceptionWithInvalidOutputType()
+    {
+        $scheduler = new Scheduler();
+
+        $scheduler->call(function ($phrase) {
+            return $phrase;
+        }, [
+            'Hello World!'
+        ]);
+
+        $scheduler->call(function () {
+            return true;
+        });
+
+        $scheduler->run();
+
+        $scheduler->getVerboseOutput('multiline');
+    }
+
+    public function testShouldPrioritizeJobsInBackround()
+    {
+        $scheduler = new Scheduler();
+
+        $scheduler->php(__DIR__.'/../async_job.php', null, null, 'async_foreground')->then(function () {
+            return true;
+        });
+
+        $scheduler->php(__DIR__.'/../async_job.php', null, null, 'async_background');
+
+        $jobs = $scheduler->getQueuedJobs();
+
+        $this->assertEquals('async_background', $jobs[0]->getId());
+        $this->assertEquals('async_foreground', $jobs[1]->getId());
+    }
 }

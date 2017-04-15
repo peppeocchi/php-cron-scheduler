@@ -18,16 +18,25 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.5.9",
-        "mtdowling/cron-expression": "@stable",
-        "swiftmailer/swiftmailer": "@stable",
-        "psr/log": "~1.0"
+        "mtdowling/cron-expression": "~1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "5.0.*"
+        "php" : "^7.0",
+        "phpunit/phpunit": "^6.0",
+        "satooshi/php-coveralls": "^1.0",
+        "swiftmailer/swiftmailer": "~5.4"
+    },
+    "suggest": {
+        "swiftmailer/swiftmailer": "Required to send the output of a job to email address/es (~5.4)."
     },
     "autoload": {
-        "psr-0": {
-            "GO": "src/"
+        "psr-4": {
+            "GO\\": "src/GO/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/GO/"
         }
     }
 }
