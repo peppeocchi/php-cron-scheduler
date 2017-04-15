@@ -17,7 +17,7 @@ class JobOutputFilesTest extends TestCase
         $this->assertFalse(file_exists($outputFile));
         $job->output($outputFile)->run();
 
-        sleep(1);
+        sleep(2);
         $this->assertTrue(file_exists($outputFile));
 
         // Content should be "hi"
