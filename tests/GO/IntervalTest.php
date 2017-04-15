@@ -81,27 +81,151 @@ class IntervalTest extends TestCase
         $job->daily(2, 'abc');
     }
 
-    // public function testShouldRunWeekly()
-    // {
-    //     $job = new Job('ls');
+    public function testShouldRunWeekly()
+    {
+        $job = new Job('ls');
 
-    //     // Default run is at 00:00 every day
-    //     $this->assertTrue($job->everyDay()->isDue(\DateTime::createFromFormat('H:i', '00:00')));
-    // }
+        // Default run is every Sunday at 00:00
+        $this->assertTrue($job->weekly()->isDue(
+            new \DateTime('Sunday'))
+        );
 
-    // public function testShouldRunMonthly()
-    // {
-    //     $job = new Job('ls');
+        $this->assertFalse($job->weekly()->isDue(
+            new \DateTime('Tuesday'))
+        );
+    }
 
-    //     // Default run is at 00:00 every day
-    //     $this->assertTrue($job->everyDay()->isDue(\DateTime::createFromFormat('H:i', '00:00')));
-    // }
+    public function testShouldRunWeeklyOnCustomDay()
+    {
+        $job = new Job('ls');
 
-    // public function testShouldRunYearly()
-    // {
-    //     $job = new Job('ls');
+        $this->assertTrue($job->weekly(6)->isDue(
+            new \DateTime('Saturday'))
+        );
 
-    //     // Default run is at 00:00 every day
-    //     $this->assertTrue($job->everyDay()->isDue(\DateTime::createFromFormat('H:i', '00:00')));
-    // }
+        // Testing also the helpers to run weekly on custom day
+        $this->assertTrue($job->monday()->isDue(
+            new \DateTime('Monday'))
+        );
+        $this->assertFalse($job->monday()->isDue(
+            new \DateTime('Saturday'))
+        );
+
+        $this->assertTrue($job->tuesday()->isDue(
+            new \DateTime('Tuesday'))
+        );
+        $this->assertTrue($job->wednesday()->isDue(
+            new \DateTime('Wednesday'))
+        );
+        $this->assertTrue($job->thursday()->isDue(
+            new \DateTime('Thursday'))
+        );
+        $this->assertTrue($job->friday()->isDue(
+            new \DateTime('Friday'))
+        );
+        $this->assertTrue($job->saturday()->isDue(
+            new \DateTime('Saturday'))
+        );
+        $this->assertTrue($job->sunday()->isDue(
+            new \DateTime('Sunday'))
+        );
+    }
+
+    public function testShouldRunWeeklyOnCustomDayAndTime()
+    {
+        $job = new Job('ls');
+
+        $date1 = new \DateTime('Saturday 03:45');
+        $date2 = new \DateTime('Saturday 03:46');
+
+        $this->assertTrue($job->weekly(6, 3, 45)->isDue($date1));
+        $this->assertTrue($job->weekly(6, '03:45')->isDue($date1));
+        $this->assertFalse($job->weekly(6, '03:45')->isDue($date2));
+    }
+
+    public function testShouldRunMonthly()
+    {
+        $job = new Job('ls');
+
+        // Default run is every 1st of the month at 00:00
+        $this->assertTrue($job->monthly()->isDue(
+            new \DateTime('01 January'))
+        );
+        $this->assertTrue($job->monthly()->isDue(
+            new \DateTime('01 December'))
+        );
+
+        $this->assertFalse($job->monthly()->isDue(
+            new \DateTime('02 January'))
+        );
+    }
+
+    public function testShouldRunMonthlyOnCustomMonth()
+    {
+        $job = new Job('ls');
+
+        $this->assertTrue($job->monthly()->isDue(
+            new \DateTime('01 January'))
+        );
+
+        // Testing also the helpers to run weekly on custom day
+        $this->assertTrue($job->january()->isDue(
+            new \DateTime('01 January'))
+        );
+        $this->assertFalse($job->january()->isDue(
+            new \DateTime('01 February'))
+        );
+
+        $this->assertTrue($job->february()->isDue(
+            new \DateTime('01 February'))
+        );
+
+        $this->assertTrue($job->march()->isDue(
+            new \DateTime('01 March'))
+        );
+        $this->assertTrue($job->april()->isDue(
+            new \DateTime('01 April'))
+        );
+        $this->assertTrue($job->may()->isDue(
+            new \DateTime('01 May'))
+        );
+        $this->assertTrue($job->june()->isDue(
+            new \DateTime('01 June'))
+        );
+        $this->assertTrue($job->july()->isDue(
+            new \DateTime('01 July'))
+        );
+        $this->assertTrue($job->august()->isDue(
+            new \DateTime('01 August'))
+        );
+        $this->assertTrue($job->september()->isDue(
+            new \DateTime('01 September'))
+        );
+        $this->assertTrue($job->october()->isDue(
+            new \DateTime('01 October'))
+        );
+        $this->assertTrue($job->november()->isDue(
+            new \DateTime('01 November'))
+        );
+        $this->assertTrue($job->december()->isDue(
+            new \DateTime('01 December'))
+        );
+    }
+
+    public function testShouldRunMonthlyOnCustomDayAndTime()
+    {
+        $job = new Job('ls');
+
+        $date1 = new \DateTime('May 15 12:21');
+        $date2 = new \DateTime('February 15 12:21');
+        $date3 = new \DateTime('February 16 12:21');
+
+        $this->assertTrue($job->monthly(5, 15, 12, 21)->isDue($date1));
+        $this->assertTrue($job->monthly(5, 15, '12:21')->isDue($date1));
+        $this->assertFalse($job->monthly(5, 15, '12:21')->isDue($date2));
+        // Every 15th at 12:21
+        $this->assertTrue($job->monthly(null, 15, '12:21')->isDue($date1));
+        $this->assertTrue($job->monthly(null, 15, '12:21')->isDue($date2));
+        $this->assertFalse($job->monthly(null, 15, '12:21')->isDue($date3));
+    }
 }
