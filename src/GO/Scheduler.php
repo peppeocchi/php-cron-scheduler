@@ -63,13 +63,18 @@ class Scheduler
      */
     private function prioritiseJobs()
     {
-        $jobs = $this->jobs;
+        $background = [];
+        $foreground = [];
 
-        usort($jobs, function ($a, $b) {
-            return $b->canRunInBackground();
-        });
+        foreach ($this->jobs as $job) {
+            if ($job->canRunInBackground()) {
+                $background[] = $job;
+            } else {
+                $foreground[] = $job;
+            }
+        }
 
-        return $jobs;
+        return array_merge($background, $foreground);
     }
 
     /**
