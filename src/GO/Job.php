@@ -152,7 +152,7 @@ class Job
     }
 
     /**
-     * Get the Job id
+     * Get the Job id.
      *
      * @return string
      */
@@ -165,7 +165,7 @@ class Job
      * Check if the Job is due to run.
      * It accepts as input a DateTime used to check if
      * the job is due. Defaults to job creation time.
-     * It also default the execution time if not previously defined
+     * It also default the execution time if not previously defined.
      *
      * @param  DateTime  $date
      * @return bool
@@ -215,9 +215,9 @@ class Job
     {
         if (is_callable($this->command) || $this->runInBackground === false) {
             return false;
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     /**
@@ -310,7 +310,7 @@ class Job
     {
         if (isset($config['email'])) {
             if (! is_array($config['email'])) {
-                throw new InvalidArgumentException("Email configuration should be an array.");
+                throw new InvalidArgumentException('Email configuration should be an array.');
             }
             $this->emailConfig = $config['email'];
         }
@@ -468,7 +468,7 @@ class Job
     public function email($email)
     {
         if (! is_string($email) && ! is_array($email)) {
-            throw new InvalidArgumentException("The email can be only string or array");
+            throw new InvalidArgumentException('The email can be only string or array');
         }
 
         $this->emailTo = is_array($email) ? $email : [$email];

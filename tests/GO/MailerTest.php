@@ -19,13 +19,13 @@ class MailerTest extends TestCase
     public function testShouldAllowCustomTransportWhenSendingEmails()
     {
         $job = new Job(function () {
-            return "hi";
+            return 'hi';
         });
 
         $job->configure([
             'email' => [
-                'transport' => new \Swift_NullTransport()
-            ]
+                'transport' => new \Swift_NullTransport(),
+            ],
         ]);
 
         $this->assertInstanceOf(\Swift_NullTransport::class, $job->getEmailConfig()['transport']);
@@ -34,13 +34,13 @@ class MailerTest extends TestCase
     public function testEmailTransportShouldAlwaysBeInstanceOfSwift_Transport()
     {
         $job = new Job(function () {
-            return "hi";
+            return 'hi';
         });
 
         $job->configure([
             'email' => [
-                'transport' => 'Something not allowed'
-            ]
+                'transport' => 'Something not allowed',
+            ],
         ]);
 
         $this->assertInstanceOf(\Swift_Transport::class, $job->getEmailConfig()['transport']);
@@ -49,7 +49,7 @@ class MailerTest extends TestCase
     public function testShouldSendJobOutputToEmail()
     {
         $emailAddress = 'local@localhost.com';
-        $command = PHP_BINARY.' '.__DIR__.'/../test_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../test_job.php';
         $job1 = new Job($command);
 
         $job2 = new Job(function () {
@@ -58,15 +58,15 @@ class MailerTest extends TestCase
 
         $nullTransportConfig = [
             'email' => [
-                'transport' => new \Swift_NullTransport()
-            ]
+                'transport' => new \Swift_NullTransport(),
+            ],
         ];
         $job1->configure($nullTransportConfig);
         $job2->configure($nullTransportConfig);
 
-        $outputFile1 = __DIR__.'/../tmp/output001.log';
+        $outputFile1 = __DIR__ . '/../tmp/output001.log';
         $this->assertTrue($job1->output($outputFile1)->email($emailAddress)->run());
-        $outputFile2 = __DIR__.'/../tmp/output002.log';
+        $outputFile2 = __DIR__ . '/../tmp/output002.log';
         $this->assertTrue($job2->output($outputFile2)->email($emailAddress)->run());
 
         unlink($outputFile1);
@@ -76,21 +76,21 @@ class MailerTest extends TestCase
     public function testShouldSendMultipleFilesToEmail()
     {
         $emailAddress = 'local@localhost.com';
-        $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../async_job.php';
         $job = new Job($command);
 
-        $outputFile1 = __DIR__.'/../tmp/output003.log';
-        $outputFile2 = __DIR__.'/../tmp/output004.log';
+        $outputFile1 = __DIR__ . '/../tmp/output003.log';
+        $outputFile2 = __DIR__ . '/../tmp/output004.log';
 
         $nullTransportConfig = [
             'email' => [
-                'transport' => new \Swift_NullTransport()
-            ]
+                'transport' => new \Swift_NullTransport(),
+            ],
         ];
         $job->configure($nullTransportConfig);
 
         $this->assertTrue($job->output([
-            $outputFile1, $outputFile2
+            $outputFile1, $outputFile2,
         ])->email([$emailAddress])->run());
 
         unlink($outputFile1);
@@ -101,20 +101,20 @@ class MailerTest extends TestCase
     {
         $emailAddress1 = 'local@localhost.com';
         $emailAddress2 = 'local1@localhost.com';
-        $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../async_job.php';
         $job = new Job($command);
 
-        $outputFile = __DIR__.'/../tmp/output005.log';
+        $outputFile = __DIR__ . '/../tmp/output005.log';
 
         $nullTransportConfig = [
             'email' => [
-                'transport' => new \Swift_NullTransport()
-            ]
+                'transport' => new \Swift_NullTransport(),
+            ],
         ];
         $job->configure($nullTransportConfig);
 
         $this->assertTrue($job->output($outputFile)->email([
-            $emailAddress1, $emailAddress2
+            $emailAddress1, $emailAddress2,
         ])->run());
 
         unlink($outputFile);
@@ -123,10 +123,10 @@ class MailerTest extends TestCase
     public function testShouldAcceptCustomEmailConfig()
     {
         $emailAddress = 'local@localhost.com';
-        $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../async_job.php';
         $job = new Job($command);
 
-        $outputFile = __DIR__.'/../tmp/output6.log';
+        $outputFile = __DIR__ . '/../tmp/output6.log';
 
         $this->assertTrue(
             $job->output($outputFile)->email($emailAddress)
@@ -135,8 +135,8 @@ class MailerTest extends TestCase
                         'subject' => 'My custom subject',
                         'from' => 'my@custom.from',
                         'body' => 'My custom body',
-                        'transport' => new \Swift_NullTransport()
-                    ]
+                        'transport' => new \Swift_NullTransport(),
+                    ],
                 ])->run()
         );
 

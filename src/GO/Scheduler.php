@@ -254,7 +254,7 @@ class Scheduler
                 return implode("\n", $this->outputSchedule);
 
             case 'html':
-                return implode("<br>", $this->outputSchedule);
+                return implode('<br>', $this->outputSchedule);
 
             case 'array':
                 return $this->outputSchedule;

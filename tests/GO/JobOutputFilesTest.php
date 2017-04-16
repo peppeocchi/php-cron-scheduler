@@ -7,9 +7,9 @@ class JobOutputFilesTest extends TestCase
 {
     public function testShouldWriteCommandOutputToSingleFile()
     {
-        $command = PHP_BINARY.' '.__DIR__.'/../test_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../test_job.php';
         $job = new Job($command);
-        $outputFile = __DIR__.'/../tmp/output.log';
+        $outputFile = __DIR__ . '/../tmp/output.log';
 
         @unlink($outputFile);
 
@@ -20,19 +20,19 @@ class JobOutputFilesTest extends TestCase
         sleep(2);
         $this->assertTrue(file_exists($outputFile));
 
-        // Content should be "hi"
-        $this->assertEquals("hi", file_get_contents($outputFile));
+        // Content should be 'hi'
+        $this->assertEquals('hi', file_get_contents($outputFile));
 
         unlink($outputFile);
     }
 
     public function testShouldWriteCommandOutputToMultipleFiles()
     {
-        $command = PHP_BINARY.' '.__DIR__.'/../test_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../test_job.php';
         $job = new Job($command);
-        $outputFile1 = __DIR__.'/../tmp/output1.log';
-        $outputFile2 = __DIR__.'/../tmp/output2.log';
-        $outputFile3 = __DIR__.'/../tmp/output3.log';
+        $outputFile1 = __DIR__ . '/../tmp/output1.log';
+        $outputFile2 = __DIR__ . '/../tmp/output2.log';
+        $outputFile3 = __DIR__ . '/../tmp/output3.log';
 
         @unlink($outputFile1);
         @unlink($outputFile2);
@@ -53,9 +53,9 @@ class JobOutputFilesTest extends TestCase
         $this->assertTrue(file_exists($outputFile2));
         $this->assertTrue(file_exists($outputFile3));
 
-        $this->assertEquals("hi", file_get_contents($outputFile1));
-        $this->assertEquals("hi", file_get_contents($outputFile2));
-        $this->assertEquals("hi", file_get_contents($outputFile3));
+        $this->assertEquals('hi', file_get_contents($outputFile1));
+        $this->assertEquals('hi', file_get_contents($outputFile2));
+        $this->assertEquals('hi', file_get_contents($outputFile3));
 
         unlink($outputFile1);
         unlink($outputFile2);
@@ -65,11 +65,11 @@ class JobOutputFilesTest extends TestCase
     public function testShouldWriteFunctionOutputToSingleFile()
     {
         $job = new Job(function () {
-            echo "Hello ";
+            echo 'Hello ';
 
-            return "World!";
+            return 'World!';
         });
-        $outputFile = __DIR__.'/../tmp/output.log';
+        $outputFile = __DIR__ . '/../tmp/output.log';
 
         @unlink($outputFile);
 
@@ -80,7 +80,7 @@ class JobOutputFilesTest extends TestCase
         sleep(1);
         $this->assertTrue(file_exists($outputFile));
 
-        $this->assertEquals("Hello World!", file_get_contents($outputFile));
+        $this->assertEquals('Hello World!', file_get_contents($outputFile));
 
         unlink($outputFile);
     }
@@ -88,11 +88,11 @@ class JobOutputFilesTest extends TestCase
     public function testShouldWriteFunctionOutputToMultipleFiles()
     {
         $job = new Job(function () {
-            echo "Hello";
+            echo 'Hello';
         });
-        $outputFile1 = __DIR__.'/../tmp/output1.log';
-        $outputFile2 = __DIR__.'/../tmp/output2.log';
-        $outputFile3 = __DIR__.'/../tmp/output3.log';
+        $outputFile1 = __DIR__ . '/../tmp/output1.log';
+        $outputFile2 = __DIR__ . '/../tmp/output2.log';
+        $outputFile3 = __DIR__ . '/../tmp/output3.log';
 
         @unlink($outputFile1);
         @unlink($outputFile2);
@@ -113,9 +113,9 @@ class JobOutputFilesTest extends TestCase
         $this->assertTrue(file_exists($outputFile2));
         $this->assertTrue(file_exists($outputFile3));
 
-        $this->assertEquals("Hello", file_get_contents($outputFile1));
-        $this->assertEquals("Hello", file_get_contents($outputFile2));
-        $this->assertEquals("Hello", file_get_contents($outputFile3));
+        $this->assertEquals('Hello', file_get_contents($outputFile1));
+        $this->assertEquals('Hello', file_get_contents($outputFile2));
+        $this->assertEquals('Hello', file_get_contents($outputFile3));
 
         unlink($outputFile1);
         unlink($outputFile2);
@@ -125,9 +125,9 @@ class JobOutputFilesTest extends TestCase
     public function testShouldWriteFunctionReturnToSingleFile()
     {
         $job = new Job(function () {
-            return "Hello World!";
+            return 'Hello World!';
         });
-        $outputFile = __DIR__.'/../tmp/output1.log';
+        $outputFile = __DIR__ . '/../tmp/output1.log';
 
         // Test fist that the file doesn't exist yet
         $this->assertFalse(file_exists($outputFile));
@@ -136,7 +136,7 @@ class JobOutputFilesTest extends TestCase
         sleep(1);
         $this->assertTrue(file_exists($outputFile));
 
-        $this->assertEquals("Hello World!", file_get_contents($outputFile));
+        $this->assertEquals('Hello World!', file_get_contents($outputFile));
 
         unlink($outputFile);
     }
@@ -144,11 +144,11 @@ class JobOutputFilesTest extends TestCase
     public function testShouldWriteFunctionReturnToMultipleFiles()
     {
         $job = new Job(function () {
-            return ["Hello ", "World!"];
+            return ['Hello ', 'World!'];
         });
-        $outputFile1 = __DIR__.'/../tmp/output1.log';
-        $outputFile2 = __DIR__.'/../tmp/output2.log';
-        $outputFile3 = __DIR__.'/../tmp/output3.log';
+        $outputFile1 = __DIR__ . '/../tmp/output1.log';
+        $outputFile2 = __DIR__ . '/../tmp/output2.log';
+        $outputFile3 = __DIR__ . '/../tmp/output3.log';
 
         @unlink($outputFile1);
         @unlink($outputFile2);
@@ -169,9 +169,9 @@ class JobOutputFilesTest extends TestCase
         $this->assertTrue(file_exists($outputFile2));
         $this->assertTrue(file_exists($outputFile3));
 
-        $this->assertEquals("Hello World!", file_get_contents($outputFile1));
-        $this->assertEquals("Hello World!", file_get_contents($outputFile2));
-        $this->assertEquals("Hello World!", file_get_contents($outputFile3));
+        $this->assertEquals('Hello World!', file_get_contents($outputFile1));
+        $this->assertEquals('Hello World!', file_get_contents($outputFile2));
+        $this->assertEquals('Hello World!', file_get_contents($outputFile3));
 
         unlink($outputFile1);
         unlink($outputFile2);
@@ -181,11 +181,11 @@ class JobOutputFilesTest extends TestCase
     public function testShouldWriteFunctionOutputAndReturnToFile()
     {
         $job = new Job(function () {
-            echo "Hello ";
+            echo 'Hello ';
 
-            return "World!";
+            return 'World!';
         });
-        $outputFile = __DIR__.'/../tmp/output1.log';
+        $outputFile = __DIR__ . '/../tmp/output1.log';
 
         // Test fist that the file doesn't exist yet
         $this->assertFalse(file_exists($outputFile));
@@ -194,7 +194,7 @@ class JobOutputFilesTest extends TestCase
         sleep(1);
         $this->assertTrue(file_exists($outputFile));
 
-        $this->assertEquals("Hello World!", file_get_contents($outputFile));
+        $this->assertEquals('Hello World!', file_get_contents($outputFile));
 
         unlink($outputFile);
     }

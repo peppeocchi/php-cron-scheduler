@@ -86,7 +86,7 @@ class JobTest extends TestCase
     {
         $job = new Job('ls', [
             '-l' => null,
-            '-arg' => 'value'
+            '-arg' => 'value',
         ]);
 
         $this->assertEquals("ls '-l' '-arg' 'value'", $job->inForeground()->compile());
@@ -103,7 +103,7 @@ class JobTest extends TestCase
     public function testShouldRunInBackground()
     {
         // This script has a 5 seconds sleep
-        $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../async_job.php';
         $job = new Job($command);
 
         $startTime = microtime(true);
@@ -149,7 +149,7 @@ class JobTest extends TestCase
     {
         $job = new Job('ls');
         $this->assertInstanceOf(Job::class, $job->configure([
-            'email' => []
+            'email' => [],
         ]));
     }
 
@@ -160,13 +160,13 @@ class JobTest extends TestCase
     {
         $job = new Job('ls');
         $job->configure([
-            'email' => 123
+            'email' => 123,
         ]);
     }
 
     public function testShouldCreateLockFileIfOnlyOne()
     {
-        $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../async_job.php';
         $job = new Job($command);
 
         // Default temp dir
@@ -184,11 +184,11 @@ class JobTest extends TestCase
 
     public function testShouldCreateLockFilesInCustomPath()
     {
-        $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../async_job.php';
         $job = new Job($command);
 
         // Default temp dir
-        $tmpDir = __DIR__.'/../tmp';
+        $tmpDir = __DIR__ . '/../tmp';
         $lockFile = $tmpDir . '/' . $job->getId() . '.lock';
 
         @unlink($lockFile);
@@ -204,11 +204,10 @@ class JobTest extends TestCase
     {
         $job = new Job(function () {
             sleep(3);
-            return;
         });
 
         // Default temp dir
-        $tmpDir = __DIR__.'/../tmp';
+        $tmpDir = __DIR__ . '/../tmp';
         $lockFile = $tmpDir . '/' . $job->getId() . '.lock';
 
         $job->onlyOne($tmpDir)->run();
@@ -218,11 +217,11 @@ class JobTest extends TestCase
 
     public function testShouldRemoveLockFileAfterRunningCommands()
     {
-        $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../async_job.php';
         $job = new Job($command);
 
         // Default temp dir
-        $tmpDir = __DIR__.'/../tmp';
+        $tmpDir = __DIR__ . '/../tmp';
         $lockFile = $tmpDir . '/' . $job->getId() . '.lock';
 
         $job->onlyOne($tmpDir)->run();
@@ -238,12 +237,12 @@ class JobTest extends TestCase
 
     public function testShouldKnowIfOverlapping()
     {
-        $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../async_job.php';
         $job = new Job($command);
 
         $this->assertFalse($job->isOverlapping());
 
-        $tmpDir = __DIR__.'/../tmp';
+        $tmpDir = __DIR__ . '/../tmp';
 
         $job->onlyOne($tmpDir)->run();
 
@@ -258,12 +257,12 @@ class JobTest extends TestCase
 
     public function testShouldNotRunIfOverlapping()
     {
-        $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../async_job.php';
         $job = new Job($command);
 
         $this->assertFalse($job->isOverlapping());
 
-        $tmpDir = __DIR__.'/../tmp';
+        $tmpDir = __DIR__ . '/../tmp';
 
         $job->onlyOne($tmpDir);
 
@@ -278,12 +277,12 @@ class JobTest extends TestCase
 
     public function testShouldRunIfOverlappingCallbackReturnsTrue()
     {
-        $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../async_job.php';
         $job = new Job($command);
 
         $this->assertFalse($job->isOverlapping());
 
-        $tmpDir = __DIR__.'/../tmp';
+        $tmpDir = __DIR__ . '/../tmp';
 
         $job->onlyOne($tmpDir, function ($lastExecution) {
             return time() - $lastExecution > 2;
@@ -294,20 +293,20 @@ class JobTest extends TestCase
         sleep(3);
         // The job should run now as the function should now return true,
         // while it's still being executed
-        $lockFile = $tmpDir.'/'.$job->getId().'.lock';
+        $lockFile = $tmpDir . '/' . $job->getId() . '.lock';
         $this->assertTrue(file_exists($lockFile));
         $this->assertTrue($job->run());
     }
 
     public function testShouldAcceptTempDirInConfiguration()
     {
-        $command = PHP_BINARY.' '.__DIR__.'/../async_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../async_job.php';
         $job = new Job($command);
 
-        $tmpDir = __DIR__.'/../tmp';
+        $tmpDir = __DIR__ . '/../tmp';
 
         $job->configure([
-            'tempDir' => $tmpDir
+            'tempDir' => $tmpDir,
         ])->onlyOne()->run();
 
         sleep(1);
@@ -351,7 +350,7 @@ class JobTest extends TestCase
         $job2->run();
         $this->assertEquals('hello', $job2->getOutput());
 
-        $command = PHP_BINARY.' '.__DIR__.'/../test_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../test_job.php';
         $job3 = new Job($command);
         $job3->inForeground()->run();
         $this->assertEquals('hi', $job3->getOutput());
@@ -372,7 +371,7 @@ class JobTest extends TestCase
 
         $this->assertEquals($jobResult, $job->getOutput());
 
-        $command = PHP_BINARY.' '.__DIR__.'/../test_job.php';
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../test_job.php';
         $job2 = new Job($command);
 
         $job2Result = null;
