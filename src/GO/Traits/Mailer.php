@@ -1,7 +1,5 @@
 <?php namespace GO\Traits;
 
-use InvalidArgumentException;
-
 trait Mailer
 {
     /**

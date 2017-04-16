@@ -360,6 +360,7 @@ class JobTest extends TestCase
     {
         $job = new Job(function () {
             $visitors = 1000;
+
             return 'Daily visitors: ' . $visitors;
         });
 
