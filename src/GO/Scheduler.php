@@ -252,13 +252,10 @@ class Scheduler
         switch ($type) {
             case 'text':
                 return implode("\n", $this->outputSchedule);
-
             case 'html':
-                return implode("<br>", $this->outputSchedule);
-
+                return implode('<br>', $this->outputSchedule);
             case 'array':
                 return $this->outputSchedule;
-
             default:
                 throw new InvalidArgumentException('Invalid output type');
         }

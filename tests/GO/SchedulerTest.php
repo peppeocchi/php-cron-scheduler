@@ -20,7 +20,7 @@ class SchedulerTest extends TestCase
     {
         $scheduler = new Scheduler();
 
-        $script = __DIR__.'/../test_job.php';
+        $script = __DIR__ . '/../test_job.php';
 
         $this->assertEquals(count($scheduler->getQueuedJobs()), 0);
 
@@ -73,11 +73,11 @@ class SchedulerTest extends TestCase
     {
         $scheduler = new Scheduler();
 
-        $outputFile = __DIR__.'/../tmp/output.txt';
+        $outputFile = __DIR__ . '/../tmp/output.txt';
         $scheduler->call(function ($phrase) {
             return $phrase;
         }, [
-            'Hello World!'
+            'Hello World!',
         ])->output($outputFile);
 
         @unlink($outputFile);
@@ -97,7 +97,7 @@ class SchedulerTest extends TestCase
         $scheduler = new Scheduler();
 
         $scheduler->call(function () {
-            throw new \Exception("Something failed");
+            throw new \Exception('Something failed');
         });
 
         $this->assertEquals(count($scheduler->getFailedJobs()), 0);
@@ -113,7 +113,7 @@ class SchedulerTest extends TestCase
         $scheduler = new Scheduler();
 
         $scheduler->call(function () {
-            throw new \Exception("Something failed");
+            throw new \Exception('Something failed');
         });
 
         $scheduler->call(function () {
@@ -130,8 +130,8 @@ class SchedulerTest extends TestCase
     {
         $schedulerConfig = [
             'email' => [
-                'subject' => 'My custom subject'
-            ]
+                'subject' => 'My custom subject',
+            ],
         ];
         $scheduler = new Scheduler($schedulerConfig);
 
@@ -144,15 +144,15 @@ class SchedulerTest extends TestCase
     {
         $schedulerConfig = [
             'email' => [
-                'subject' => 'My custom subject'
-            ]
+                'subject' => 'My custom subject',
+            ],
         ];
         $scheduler = new Scheduler($schedulerConfig);
 
         $jobConfig = [
             'email' => [
-                'subject' => 'My job subject'
-            ]
+                'subject' => 'My job subject',
+            ],
         ];
         $job = $scheduler->raw('ls')->configure($jobConfig);
 
@@ -167,7 +167,7 @@ class SchedulerTest extends TestCase
         $scheduler->call(function ($phrase) {
             return $phrase;
         }, [
-            'Hello World!'
+            'Hello World!',
         ]);
 
         $scheduler->run();
@@ -183,7 +183,7 @@ class SchedulerTest extends TestCase
         $scheduler->call(function ($phrase) {
             return $phrase;
         }, [
-            'Hello World!'
+            'Hello World!',
         ]);
 
         $scheduler->call(function () {
@@ -202,7 +202,7 @@ class SchedulerTest extends TestCase
         $scheduler->call(function ($phrase) {
             return $phrase;
         }, [
-            'Hello World!'
+            'Hello World!',
         ]);
 
         $scheduler->call(function () {
@@ -225,7 +225,7 @@ class SchedulerTest extends TestCase
         $scheduler->call(function ($phrase) {
             return $phrase;
         }, [
-            'Hello World!'
+            'Hello World!',
         ]);
 
         $scheduler->call(function () {
@@ -241,11 +241,11 @@ class SchedulerTest extends TestCase
     {
         $scheduler = new Scheduler();
 
-        $scheduler->php(__DIR__.'/../async_job.php', null, null, 'async_foreground')->then(function () {
+        $scheduler->php(__DIR__ . '/../async_job.php', null, null, 'async_foreground')->then(function () {
             return true;
         });
 
-        $scheduler->php(__DIR__.'/../async_job.php', null, null, 'async_background');
+        $scheduler->php(__DIR__ . '/../async_job.php', null, null, 'async_background');
 
         $jobs = $scheduler->getQueuedJobs();
 

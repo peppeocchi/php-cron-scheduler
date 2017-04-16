@@ -8,7 +8,7 @@ trait Interval
     /**
      * Set the Job execution time.
      *
-     * @param  string
+     * @param  string  $expression
      * @return this
      */
     public function at($expression)
@@ -86,6 +86,7 @@ trait Interval
      * Set the execution time to once a month.
      *
      * @param  int\string  $month
+     * @param  int\string  $day
      * @param  int\string  $hour
      * @param  int\string  $minute
      * @return this
