@@ -48,7 +48,7 @@ class JobOutputFilesTest extends TestCase
             $outputFile3,
         ])->run();
 
-        sleep(1);
+        sleep(2);
         $this->assertTrue(file_exists($outputFile1));
         $this->assertTrue(file_exists($outputFile2));
         $this->assertTrue(file_exists($outputFile3));
@@ -77,7 +77,7 @@ class JobOutputFilesTest extends TestCase
         $this->assertFalse(file_exists($outputFile));
         $job->output($outputFile)->run();
 
-        sleep(1);
+        sleep(2);
         $this->assertTrue(file_exists($outputFile));
 
         $this->assertEquals('Hello World!', file_get_contents($outputFile));
@@ -108,7 +108,7 @@ class JobOutputFilesTest extends TestCase
             $outputFile3,
         ])->run();
 
-        sleep(1);
+        sleep(2);
         $this->assertTrue(file_exists($outputFile1));
         $this->assertTrue(file_exists($outputFile2));
         $this->assertTrue(file_exists($outputFile3));
@@ -133,7 +133,7 @@ class JobOutputFilesTest extends TestCase
         $this->assertFalse(file_exists($outputFile));
         $job->output($outputFile)->run();
 
-        sleep(1);
+        sleep(2);
         $this->assertTrue(file_exists($outputFile));
 
         $this->assertEquals('Hello World!', file_get_contents($outputFile));
@@ -164,7 +164,7 @@ class JobOutputFilesTest extends TestCase
             $outputFile3,
         ])->run();
 
-        sleep(1);
+        sleep(2);
         $this->assertTrue(file_exists($outputFile1));
         $this->assertTrue(file_exists($outputFile2));
         $this->assertTrue(file_exists($outputFile3));
@@ -191,7 +191,7 @@ class JobOutputFilesTest extends TestCase
         $this->assertFalse(file_exists($outputFile));
         $job->output($outputFile)->run();
 
-        sleep(1);
+        sleep(2);
         $this->assertTrue(file_exists($outputFile));
 
         $this->assertEquals('Hello World!', file_get_contents($outputFile));
