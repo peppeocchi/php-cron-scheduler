@@ -275,18 +275,18 @@ $scheduler->php('script.php')->onlyOne(null, function ($lastExecutionTime) {
 
 ### After job execution
 
-Sometime you might wish to do something after a job runs. The `after` methods provides you the flexibility to do anything you want after the job execution. The output of the job will be injected to this function.
+Sometime you might wish to do something after a job runs. The `then` methods provides you the flexibility to do anything you want after the job execution. The output of the job will be injected to this function.
 For example you might want to add an entry to you logs, ping a url etc...
 By default, the job will be forced to run in foreground (because the output is injected to the function), if you don't need the output, you can pass `true` as a second parameter to allow the execution in background (in this case `$output` will be empty).
 
 ```php
-$scheduler->php('script.php')->after(function ($output) use ($logger, $messenger) {
+$scheduler->php('script.php')->then(function ($output) use ($logger, $messenger) {
     $logger->info($output);
 
     $messenger->ping('myurl.com', $output);
 });
 
-$scheduler->php('script.php')->after(function ($output) {
+$scheduler->php('script.php')->then(function ($output) {
     log('Job executed!');
 }, true);
 ```
