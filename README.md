@@ -122,22 +122,22 @@ If you don't call any of this method, the job will run every minute (* * * * *).
 
 - `at` - This method accepts any expression supported by [mtdowling/cron-expression](https://github.com/mtdowling/cron-expression)
     ```php
-    $schedule->php('script.php')->at('* * * * *');
+    $scheduler->php('script.php')->at('* * * * *');
     ```
 - `everyMinute` - Run every minute
     ```php
-    $schedule->php('script.php')->everyMinute();
+    $scheduler->php('script.php')->everyMinute();
     ```
 - `hourly` - Run once per hour. You can optionally pass the `$minute` you want to run, bu default it will run every hour at minute '00'.
     ```php
-    $schedule->php('script.php')->hourly();
-    $schedule->php('script.php')->hourly(53);
+    $scheduler->php('script.php')->hourly();
+    $scheduler->php('script.php')->hourly(53);
     ```
 - `daily` - Run once per day. You can optionally pass `$hour` and `$minute` to have more granular control (or a string `hour:minute`)
     ```php
-    $schedule->php('script.php')->daily();
-    $schedule->php('script.php')->daily(22, 03);
-    $schedule->php('script.php')->daily('22:03');
+    $scheduler->php('script.php')->daily();
+    $scheduler->php('script.php')->daily(22, 03);
+    $scheduler->php('script.php')->daily('22:03');
     ```
 
 ### Send output to file/s
