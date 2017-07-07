@@ -23,10 +23,10 @@
     "require-dev": {
         "phpunit/phpunit": "~5.7",
         "satooshi/php-coveralls": "^1.0",
-        "swiftmailer/swiftmailer": "~5.4"
+        "swiftmailer/swiftmailer": "~5.4 || ^6.0"
     },
     "suggest": {
-        "swiftmailer/swiftmailer": "Required to send the output of a job to email address/es (~5.4)."
+        "swiftmailer/swiftmailer": "Required to send the output of a job to email address/es (~5.4 || ^6.0)."
     },
     "autoload": {
         "psr-4": {

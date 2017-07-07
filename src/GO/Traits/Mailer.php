@@ -29,7 +29,7 @@ trait Mailer
         if (! isset($this->emailConfig['transport']) ||
             ! ($this->emailConfig['transport'] instanceof \Swift_Transport)
         ) {
-            $this->emailConfig['transport'] = \Swift_MailTransport::newInstance();
+            $this->emailConfig['transport'] = new \Swift_SendmailTransport();
         }
 
         return $this->emailConfig;
@@ -43,13 +43,11 @@ trait Mailer
      */
     private function sendToEmails(array $files)
     {
-        $mailer = \Swift_Mailer::newInstance(
-            $this->emailConfig['transport']
-        );
+        $mailer = new \Swift_Mailer($this->emailConfig['transport']);
 
         $config = $this->getEmailConfig();
 
-        $message = \Swift_Message::newInstance()
+        $message = (new \Swift_Message())
             ->setSubject($config['subject'])
             ->setFrom($config['from'])
             ->setTo($this->emailTo)
