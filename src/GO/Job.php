@@ -1,8 +1,8 @@
 <?php namespace GO;
 
-use Cron\CronExpression;
 use DateTime;
 use Exception;
+use Cron\CronExpression;
 use InvalidArgumentException;
 
 class Job
@@ -122,7 +122,7 @@ class Job
      * @var string
      */
     private $outputMode;
-    
+
     /**
      * Create a new Job instance.
      *
@@ -138,7 +138,7 @@ class Job
             if (is_string($command)) {
                 $this->id = md5($command);
             } else {
-                /** @var object $command */
+                /* @var object $command */
                 $this->id = spl_object_hash($command);
             }
         }
@@ -403,8 +403,8 @@ class Job
      * Execute a callable job.
      *
      * @param  callable $fn
-     * @return string
      * @throws Exception
+     * @return string
      */
     private function exec(callable $fn)
     {
