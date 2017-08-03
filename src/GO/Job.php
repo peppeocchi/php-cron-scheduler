@@ -1,5 +1,6 @@
 <?php namespace GO;
 
+use Cron\CronExpression;
 use DateTime;
 use Exception;
 use InvalidArgumentException;
@@ -77,7 +78,7 @@ class Job
     /**
      * The output of the executed job.
      *
-     * @var mixex
+     * @var mixed
      */
     private $output;
 
@@ -118,17 +119,16 @@ class Job
     private $whenOverlapping;
 
     /**
-     * @var Swift_Mailer
+     * @var string
      */
-    private $mailer;
-
+    private $outputMode;
+    
     /**
      * Create a new Job instance.
      *
-     * @param  string\callable  $command
+     * @param  string|callable  $command
      * @param  array            $args
      * @param  string           $id
-     * @return void
      */
     public function __construct($command, $args = [], $id = null)
     {
@@ -138,6 +138,7 @@ class Job
             if (is_string($command)) {
                 $this->id = md5($command);
             } else {
+                /** @var object $command */
                 $this->id = spl_object_hash($command);
             }
         }
@@ -197,7 +198,7 @@ class Job
     /**
      * Force the Job to run in foreground.
      *
-     * @return this
+     * @return self
      */
     public function inForeground()
     {
@@ -228,7 +229,7 @@ class Job
      *
      * @param  string    $tempDir          The directory path for the lock files
      * @param  callable  $whenOverlapping  A callback to ignore job overlapping
-     * @return this
+     * @return self
      */
     public function onlyOne($tempDir = null, callable $whenOverlapping = null)
     {
@@ -304,7 +305,7 @@ class Job
      * Configure the job.
      *
      * @param  array  $config
-     * @return this
+     * @return self
      */
     public function configure(array $config = [])
     {
@@ -327,7 +328,7 @@ class Job
      * Truth test to define if the job should run if due.
      *
      * @param  callable  $fn
-     * @return this
+     * @return self
      */
     public function when(callable $fn)
     {
@@ -401,8 +402,9 @@ class Job
     /**
      * Execute a callable job.
      *
-     * @param  callable  $fn
+     * @param  callable $fn
      * @return string
+     * @throws Exception
      */
     private function exec(callable $fn)
     {
@@ -435,9 +437,9 @@ class Job
     /**
      * Set the file/s where to write the output of the job.
      *
-     * @param  string\array  $filename
+     * @param  string|array  $filename
      * @param  bool          $append
-     * @return this
+     * @return self
      */
     public function output($filename, $append = false)
     {
@@ -462,8 +464,8 @@ class Job
      * The Job should be set to write output to a file
      * for this to work.
      *
-     * @param  string\array  $email
-     * @return this
+     * @param  string|array  $email
+     * @return self
      */
     public function email($email)
     {
@@ -498,7 +500,7 @@ class Job
     /**
      * Email the output of the job, if any.
      *
-     * @return void
+     * @return bool
      */
     private function emailOutput()
     {
@@ -507,6 +509,8 @@ class Job
         }
 
         $this->sendToEmails($this->outputTo);
+
+        return true;
     }
 
     /**
@@ -519,7 +523,7 @@ class Job
      *
      * @param  callable  $fn
      * @param  bool      $runInBackground
-     * @return this
+     * @return self
      */
     public function then(callable $fn, $runInBackground = false)
     {
