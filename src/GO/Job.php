@@ -82,6 +82,13 @@ class Job
     private $output;
 
     /**
+     * Return code of executed command.
+     *
+     * @var int
+     */
+    private $returnCode;
+
+    /**
      * Files to write the output of the job.
      *
      * @var array
@@ -108,6 +115,13 @@ class Job
      * @var callable
      */
     private $after;
+
+    /**
+     * A function to execute in case of a non-zero return code of the command.
+     *
+     * @var callable
+     */
+    private $onError;
 
     /**
      * A function to ignore an overlapping job.
@@ -361,7 +375,8 @@ class Job
         if (is_callable($compiled)) {
             $this->output = $this->exec($compiled);
         } else {
-            $this->output = exec($compiled);
+            $outputArray = null;
+            $this->output = exec($compiled, $outputArray, $this->returnCode);
         }
 
         $this->finalise();
@@ -494,6 +509,11 @@ class Job
         if (is_callable($this->after)) {
             call_user_func($this->after, $this->output);
         }
+
+        // Call in case the executed command returned an error
+        if ($this->returnCode && is_callable($this->onError)) {
+            call_user_func($this->onError, $this->returnCode, $this->output);
+        }
     }
 
     /**
@@ -504,7 +524,7 @@ class Job
     private function emailOutput()
     {
         if (! count($this->outputTo) || ! count($this->emailTo)) {
-            return false;
+            return;
         }
 
         $this->sendToEmails($this->outputTo);
@@ -532,6 +552,21 @@ class Job
         if ($runInBackground === false) {
             $this->inForeground();
         }
+
+        return $this;
+    }
+
+    /**
+     * Set a function to be called if the executed external command does not finish successfully.
+     * This will force the job to run in foreground to be able to catch the exit code.
+     *
+     * @param  callable  $fn
+     * @return self
+     */
+    public function onError(callable $fn)
+    {
+        $this->onError = $fn;
+        $this->inForeground();
 
         return $this;
     }
