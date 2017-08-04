@@ -9,7 +9,6 @@ trait Mailer
      */
     public function getEmailConfig()
     {
-        $config = [];
         if (! isset($this->emailConfig['subject']) ||
             ! is_string($this->emailConfig['subject'])
         ) {

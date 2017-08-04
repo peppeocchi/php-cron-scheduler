@@ -35,10 +35,14 @@ class Scheduler
     private $outputSchedule = [];
 
     /**
+     * @var array
+     */
+    private $config;
+
+    /**
      * Create new instance.
      *
      * @param  array  $config
-     * @return void
      */
     public function __construct(array $config = [])
     {
@@ -198,6 +202,8 @@ class Scheduler
         }
 
         $this->addSchedulerVerboseOutput("Executing {$compiled}");
+
+        return $job;
     }
 
     /**
@@ -229,6 +235,8 @@ class Scheduler
         }
 
         $this->addSchedulerVerboseOutput("{$e->getMessage()}: {$compiled}");
+
+        return $job;
     }
 
     /**
