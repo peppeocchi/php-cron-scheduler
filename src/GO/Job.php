@@ -499,15 +499,17 @@ class Job
     /**
      * Email the output of the job, if any.
      *
-     * @return void
+     * @return bool
      */
     private function emailOutput()
     {
         if (! count($this->outputTo) || ! count($this->emailTo)) {
-            return;
+            return false;
         }
 
         $this->sendToEmails($this->outputTo);
+
+        return true;
     }
 
     /**
