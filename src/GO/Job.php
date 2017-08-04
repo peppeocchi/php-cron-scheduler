@@ -401,7 +401,7 @@ class Job
     /**
      * Execute a callable job.
      *
-     * @param  callable $fn
+     * @param  callable  $fn
      * @throws Exception
      * @return string
      */
@@ -499,17 +499,15 @@ class Job
     /**
      * Email the output of the job, if any.
      *
-     * @return bool
+     * @return void
      */
     private function emailOutput()
     {
         if (! count($this->outputTo) || ! count($this->emailTo)) {
-            return false;
+            return;
         }
 
         $this->sendToEmails($this->outputTo);
-
-        return true;
     }
 
     /**

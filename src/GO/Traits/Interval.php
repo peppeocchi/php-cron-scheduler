@@ -256,9 +256,9 @@ trait Interval
     /**
      * Set the execution time to every June.
      *
-     * @param int|string  $day
-     * @param int|string  $hour
-     * @param int|string  $minute
+     * @param  int|string  $day
+     * @param  int|string  $hour
+     * @param  int|string  $minute
      * @return self
      */
     public function june($day = 1, $hour = 0, $minute = 0)
@@ -269,9 +269,9 @@ trait Interval
     /**
      * Set the execution time to every July.
      *
-     * @param int|string  $day
-     * @param int|string  $hour
-     * @param int|string  $minute
+     * @param  int|string  $day
+     * @param  int|string  $hour
+     * @param  int|string  $minute
      * @return self
      */
     public function july($day = 1, $hour = 0, $minute = 0)
@@ -282,9 +282,9 @@ trait Interval
     /**
      * Set the execution time to every August.
      *
-     * @param int|string  $day
-     * @param int|string  $hour
-     * @param int|string  $minute
+     * @param  int|string  $day
+     * @param  int|string  $hour
+     * @param  int|string  $minute
      * @return self
      */
     public function august($day = 1, $hour = 0, $minute = 0)
@@ -295,9 +295,9 @@ trait Interval
     /**
      * Set the execution time to every September.
      *
-     * @param int|string  $day
-     * @param int|string  $hour
-     * @param int|string  $minute
+     * @param  int|string  $day
+     * @param  int|string  $hour
+     * @param  int|string  $minute
      * @return self
      */
     public function september($day = 1, $hour = 0, $minute = 0)
@@ -308,9 +308,9 @@ trait Interval
     /**
      * Set the execution time to every October.
      *
-     * @param int|string  $day
-     * @param int|string  $hour
-     * @param int|string  $minute
+     * @param  int|string  $day
+     * @param  int|string  $hour
+     * @param  int|string  $minute
      * @return self
      */
     public function october($day = 1, $hour = 0, $minute = 0)
@@ -321,9 +321,9 @@ trait Interval
     /**
      * Set the execution time to every November.
      *
-     * @param int|string  $day
-     * @param int|string  $hour
-     * @param int|string  $minute
+     * @param  int|string  $day
+     * @param  int|string  $hour
+     * @param  int|string  $minute
      * @return self
      */
     public function november($day = 1, $hour = 0, $minute = 0)
@@ -334,9 +334,9 @@ trait Interval
     /**
      * Set the execution time to every December.
      *
-     * @param int|string  $day
-     * @param int|string  $hour
-     * @param int|string  $minute
+     * @param  int|string  $day
+     * @param  int|string  $hour
+     * @param  int|string  $minute
      * @return self
      */
     public function december($day = 1, $hour = 0, $minute = 0)
@@ -347,11 +347,11 @@ trait Interval
     /**
      * Validate sequence of cron expression.
      *
-     * @param int|string  $minute
-     * @param int|string  $hour
-     * @param int|string  $day
-     * @param int|string  $month
-     * @param int|string  $weekday
+     * @param  int|string  $minute
+     * @param  int|string  $hour
+     * @param  int|string  $day
+     * @param  int|string  $month
+     * @param  int|string  $weekday
      * @return array
      */
     private function validateCronSequence($minute = null, $hour = null, $day = null, $month = null, $weekday = null)
@@ -368,7 +368,7 @@ trait Interval
     /**
      * Validate sequence of cron expression.
      *
-     * @param int|string  $value
+     * @param  int|string  $value
      * @param  int         $min
      * @param  int         $max
      * @return mixed
