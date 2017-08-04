@@ -2,7 +2,6 @@
 
 use DateTime;
 use Exception;
-use Cron\CronExpression;
 use InvalidArgumentException;
 
 class Job
@@ -48,7 +47,7 @@ class Job
     /**
      * Job schedule time.
      *
-     * @var CronExpression
+     * @var Cron\CronExpression
      */
     private $executionTime;
 
