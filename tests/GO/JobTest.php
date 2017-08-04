@@ -392,6 +392,26 @@ class JobTest extends TestCase
             $job2Result === $job2->getOutput());
     }
 
+    public function testShouldRunErrorCallback()
+    {
+        $command_success = PHP_BINARY . ' ' . __DIR__ . '/../test_job.php';
+        $command_fail = $command_success . ' fail';
+
+        $run = function ($command) {
+            $job = new Job($command);
+            $testReturnCode = null;
+
+            $job->onError(function ($returnCode, $output) use (&$testReturnCode, &$testOutput) {
+                $testReturnCode = $returnCode;
+            })->run();
+
+            return $testReturnCode;
+        };
+
+        $this->assertEquals(0, $run($command_success));
+        $this->assertNotEquals(0, $run($command_fail));
+    }
+
     public function testThenMethodShouldBeChainable()
     {
         $job = new Job('ls');
