@@ -252,4 +252,21 @@ class SchedulerTest extends TestCase
         $this->assertEquals('async_background', $jobs[0]->getId());
         $this->assertEquals('async_foreground', $jobs[1]->getId());
     }
+
+    public function testCouldRunTwice()
+    {
+        $scheduler = new Scheduler();
+
+        $scheduler->call(function () {
+            return true;
+        });
+
+        $scheduler->run();
+
+        $this->assertCount(1, $scheduler->getExecutedJobs(), 'Number of executed jobs');
+
+        $scheduler->run();
+
+        $this->assertCount(1, $scheduler->getExecutedJobs(), 'Number of executed jobs');
+    }
 }

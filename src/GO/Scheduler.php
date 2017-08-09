@@ -153,6 +153,11 @@ class Scheduler
      */
     public function run()
     {
+        // Reset collected data of last run
+        $this->executedJobs = [];
+        $this->failedJobs = [];
+        $this->outputSchedule = [];
+
         $jobs = $this->getQueuedJobs();
 
         foreach ($jobs as $job) {
