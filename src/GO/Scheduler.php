@@ -273,4 +273,13 @@ class Scheduler
                 throw new InvalidArgumentException('Invalid output type');
         }
     }
+
+    /**
+     * Remove all queued Jobs
+     *
+     */
+    public function clearJobs()
+    {
+        $this->jobs = [];
+    }
 }
