@@ -275,8 +275,7 @@ class Scheduler
     }
 
     /**
-     * Remove all queued Jobs
-     *
+     * Remove all queued Jobs.
      */
     public function clearJobs()
     {
