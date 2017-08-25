@@ -265,6 +265,7 @@ class SchedulerTest extends TestCase
 
         $this->assertCount(1, $scheduler->getExecutedJobs(), 'Number of executed jobs');
 
+        $scheduler->resetRun();
         $scheduler->run();
 
         $this->assertCount(1, $scheduler->getExecutedJobs(), 'Number of executed jobs');

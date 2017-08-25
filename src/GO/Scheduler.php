@@ -153,11 +153,6 @@ class Scheduler
      */
     public function run()
     {
-        // Reset collected data of last run
-        $this->executedJobs = [];
-        $this->failedJobs = [];
-        $this->outputSchedule = [];
-
         $jobs = $this->getQueuedJobs();
 
         foreach ($jobs as $job) {
@@ -172,6 +167,19 @@ class Scheduler
         }
 
         return $this->getExecutedJobs();
+    }
+
+    /**
+     * Reset all collected data of last run.
+     *
+     * Call before run() if you call run() multiple times.
+     */
+    public function resetRun()
+    {
+        // Reset collected data of last run
+        $this->executedJobs = [];
+        $this->failedJobs = [];
+        $this->outputSchedule = [];
     }
 
     /**
