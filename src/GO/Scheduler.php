@@ -155,8 +155,10 @@ class Scheduler
     {
         $jobs = $this->getQueuedJobs();
 
+        $runTime = new DateTime('now');
+
         foreach ($jobs as $job) {
-            if ($job->isDue()) {
+            if ($job->isDue($runTime)) {
                 try {
                     $job->run();
                     $this->pushExecutedJob($job);
