@@ -25,9 +25,6 @@ class JobTest extends TestCase
         $this->assertNotEquals($job1->getId(), $job2->getId());
     }
 
-// Test scheduler: test that you schedule a job at one time, then wait 1 minute
-// and check that the Job still needs to be executed
-
     public function testShouldAllowCustomId()
     {
         $job = new Job('ls', [], 'aCustomId');
