@@ -82,6 +82,13 @@ class Job
     private $output;
 
     /**
+     * The return code of the executed job.
+     *
+     * @var int
+     */
+    private $returnCode = 0;
+
+    /**
      * Files to write the output of the job.
      *
      * @var array
@@ -361,7 +368,7 @@ class Job
         if (is_callable($compiled)) {
             $this->output = $this->exec($compiled);
         } else {
-            $this->output = exec($compiled);
+            exec($compiled, $this->output, $this->returnCode);
         }
 
         $this->finalise();
@@ -492,7 +499,7 @@ class Job
 
         // Call any callback defined
         if (is_callable($this->after)) {
-            call_user_func($this->after, $this->output);
+            call_user_func($this->after, $this->output, $this->returnCode);
         }
     }
 
