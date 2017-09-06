@@ -133,7 +133,7 @@ If you don't call any of this method, the job will run every minute (* * * * *).
     ```php
     $scheduler->php('script.php')->everyMinute();
     ```
-- `hourly` - Run once per hour. You can optionally pass the `$minute` you want to run, bu default it will run every hour at minute '00'.
+- `hourly` - Run once per hour. You can optionally pass the `$minute` you want to run, by default it will run every hour at minute '00'.
     ```php
     $scheduler->php('script.php')->hourly();
     $scheduler->php('script.php')->hourly(53);
