@@ -1,5 +1,6 @@
 <?php namespace GO\Job\Tests;
 
+use DateTime;
 use GO\Scheduler;
 use PHPUnit\Framework\TestCase;
 
@@ -303,5 +304,19 @@ class SchedulerTest extends TestCase
         $executed = $scheduler->run();
 
         $this->assertEquals(2, count($executed));
+    }
+
+    public function testShouldRunAtSpecificTime()
+    {
+        $scheduler = new Scheduler();
+        $runTime = new DateTime('2017-09-13 00:00:00');
+
+        $scheduler->call(function () {
+            // do nothing
+        })->daily('00:00');
+
+        $executed = $scheduler->run($runTime);
+
+        $this->assertEquals(1, count($executed));
     }
 }

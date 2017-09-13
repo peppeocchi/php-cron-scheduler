@@ -149,13 +149,16 @@ class Scheduler
     /**
      * Run the scheduler.
      *
+     * @param DateTime $runTime  Optional, run at specific moment
      * @return array  Executed jobs
      */
-    public function run()
+    public function run($runTime = null)
     {
         $jobs = $this->getQueuedJobs();
 
-        $runTime = new DateTime('now');
+        if (is_null($runTime)) {
+            $runTime = new DateTime('now');
+        }
 
         foreach ($jobs as $job) {
             if ($job->isDue($runTime)) {
