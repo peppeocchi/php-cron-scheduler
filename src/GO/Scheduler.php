@@ -120,7 +120,7 @@ class Scheduler
     public function php($script, $bin = null, $args = [], $id = null)
     {
         $bin = $bin !== null && is_string($bin) && file_exists($bin) ?
-            $bin : PHP_BINARY === '' ? '/usr/bin/php' : PHP_BINARY;
+            $bin : (PHP_BINARY === '' ? '/usr/bin/php' : PHP_BINARY);
 
         $job = new Job($bin . ' ' . $script, $args, $id);
 
