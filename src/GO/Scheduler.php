@@ -149,10 +149,10 @@ class Scheduler
     /**
      * Run the scheduler.
      *
-     * @param DateTime $runTime  Optional, run at specific moment
+     * @param  DateTime  $runTime  Optional, run at specific moment
      * @return array  Executed jobs
      */
-    public function run($runTime = null)
+    public function run(Datetime $runTime = null)
     {
         $jobs = $this->getQueuedJobs();
 
@@ -185,6 +185,8 @@ class Scheduler
         $this->executedJobs = [];
         $this->failedJobs = [];
         $this->outputSchedule = [];
+
+        return $this;
     }
 
     /**
@@ -293,5 +295,7 @@ class Scheduler
     public function clearJobs()
     {
         $this->jobs = [];
+
+        return $this;
     }
 }

@@ -295,3 +295,33 @@ $scheduler->php('script.php')->then(function ($output) {
     log('Job executed!');
 }, true);
 ```
+
+### Multiple scheduler runs
+In some cases you might need to run the scheduler multiple times in the same script.
+Although this is not a common case, the following methods will allow you to re-use the same instance of the scheduler.
+```php
+# some code
+$scheduler->run();
+# ...
+
+// Reset the scheduler after a previous run
+$scheduler->resetRun()
+          ->run(); // now we can run it again
+```
+
+Another handy method if you are re-using the same instance of the scheduler with different jobs (e.g. job coming from an external source - db, file ...) on every run, is to clear the current scheduled jobs.
+```php
+$scheduler->clearJobs()
+          ->resetRun()
+          ->run(); // now we can run it again
+```
+
+### Faking scheduler run time
+When running the scheduler you might pass an `DateTime` to fake the scheduler run time.
+The resons for this feature are described [here](https://github.com/peppeocchi/php-cron-scheduler/pull/28);
+
+```
+// ...
+$fakeRunTime = new DateTime('2017-09-13 00:00:00');
+$scheduler->run($fakeRunTime);
+```
