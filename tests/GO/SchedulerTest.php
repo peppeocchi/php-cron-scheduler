@@ -1,5 +1,6 @@
 <?php namespace GO\Job\Tests;
 
+use DateTime;
 use GO\Scheduler;
 use PHPUnit\Framework\TestCase;
 
@@ -251,5 +252,71 @@ class SchedulerTest extends TestCase
 
         $this->assertEquals('async_background', $jobs[0]->getId());
         $this->assertEquals('async_foreground', $jobs[1]->getId());
+    }
+
+    public function testCouldRunTwice()
+    {
+        $scheduler = new Scheduler();
+
+        $scheduler->call(function () {
+            return true;
+        });
+
+        $scheduler->run();
+
+        $this->assertCount(1, $scheduler->getExecutedJobs(), 'Number of executed jobs');
+
+        $scheduler->resetRun();
+        $scheduler->run();
+
+        $this->assertCount(1, $scheduler->getExecutedJobs(), 'Number of executed jobs');
+    }
+
+    public function testClearJobs()
+    {
+        $scheduler = new Scheduler();
+
+        $scheduler->call(function () {
+            return true;
+        });
+
+        $this->assertCount(1, $scheduler->getQueuedJobs(), 'Number of queued jobs');
+
+        $scheduler->clearJobs();
+
+        $this->assertCount(0, $scheduler->getQueuedJobs(), 'Number of queued jobs');
+    }
+
+    public function testShouldRunDelayedJobsIfDueWhenCreated()
+    {
+        $scheduler = new Scheduler();
+        $currentTime = date('H:i');
+
+        $scheduler->call(function () {
+            $s = (int) date('s');
+            sleep(60 - $s + 1);
+        })->daily($currentTime);
+
+        $scheduler->call(function () {
+            // do nothing
+        })->daily($currentTime);
+
+        $executed = $scheduler->run();
+
+        $this->assertEquals(2, count($executed));
+    }
+
+    public function testShouldRunAtSpecificTime()
+    {
+        $scheduler = new Scheduler();
+        $runTime = new DateTime('2017-09-13 00:00:00');
+
+        $scheduler->call(function () {
+            // do nothing
+        })->daily('00:00');
+
+        $executed = $scheduler->run($runTime);
+
+        $this->assertEquals(1, count($executed));
     }
 }

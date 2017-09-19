@@ -149,14 +149,19 @@ class Scheduler
     /**
      * Run the scheduler.
      *
+     * @param  DateTime  $runTime  Optional, run at specific moment
      * @return array  Executed jobs
      */
-    public function run()
+    public function run(Datetime $runTime = null)
     {
         $jobs = $this->getQueuedJobs();
 
+        if (is_null($runTime)) {
+            $runTime = new DateTime('now');
+        }
+
         foreach ($jobs as $job) {
-            if ($job->isDue()) {
+            if ($job->isDue($runTime)) {
                 try {
                     $job->run();
                     $this->pushExecutedJob($job);
@@ -167,6 +172,21 @@ class Scheduler
         }
 
         return $this->getExecutedJobs();
+    }
+
+    /**
+     * Reset all collected data of last run.
+     *
+     * Call before run() if you call run() multiple times.
+     */
+    public function resetRun()
+    {
+        // Reset collected data of last run
+        $this->executedJobs = [];
+        $this->failedJobs = [];
+        $this->outputSchedule = [];
+
+        return $this;
     }
 
     /**
@@ -267,5 +287,15 @@ class Scheduler
             default:
                 throw new InvalidArgumentException('Invalid output type');
         }
+    }
+
+    /**
+     * Remove all queued Jobs.
+     */
+    public function clearJobs()
+    {
+        $this->jobs = [];
+
+        return $this;
     }
 }

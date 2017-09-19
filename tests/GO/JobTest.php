@@ -25,9 +25,6 @@ class JobTest extends TestCase
         $this->assertNotEquals($job1->getId(), $job2->getId());
     }
 
-// Test scheduler: test that you schedule a job at one time, then wait 1 minute
-// and check that the Job still needs to be executed
-
     public function testShouldAllowCustomId()
     {
         $job = new Job('ls', [], 'aCustomId');
@@ -353,7 +350,7 @@ class JobTest extends TestCase
         $command = PHP_BINARY . ' ' . __DIR__ . '/../test_job.php';
         $job3 = new Job($command);
         $job3->inForeground()->run();
-        $this->assertEquals('hi', $job3->getOutput());
+        $this->assertEquals(['hi'], $job3->getOutput());
     }
 
     public function testShouldRunCallbackAfterJobExecution()
@@ -390,6 +387,26 @@ class JobTest extends TestCase
         })->inForeground()->run();
         $this->assertTrue(! empty($job2Result) &&
             $job2Result === $job2->getOutput());
+    }
+
+    public function testThenMethodShouldPassReturnCode()
+    {
+        $command_success = PHP_BINARY . ' ' . __DIR__ . '/../test_job.php';
+        $command_fail = $command_success . ' fail';
+
+        $run = function ($command) {
+            $job = new Job($command);
+            $testReturnCode = null;
+
+            $job->then(function ($output, $returnCode) use (&$testReturnCode, &$testOutput) {
+                $testReturnCode = $returnCode;
+            })->run();
+
+            return $testReturnCode;
+        };
+
+        $this->assertEquals(0, $run($command_success));
+        $this->assertNotEquals(0, $run($command_fail));
     }
 
     public function testThenMethodShouldBeChainable()
