@@ -311,9 +311,15 @@ $scheduler->resetRun()
 
 Another handy method if you are re-using the same instance of the scheduler with different jobs (e.g. job coming from an external source - db, file ...) on every run, is to clear the current scheduled jobs.
 ```php
-$scheduler->clearJobs()
-          ->resetRun()
-          ->run(); // now we can run it again
+$scheduler->clearJobs();
+
+$jobsFromDb = $db->query(/*...*/);
+foreach ($jobsFromDb as $job) {
+    $scheduler->php($job->script)->at($job->schedule);
+}
+
+$scheduler->resetRun()
+          ->run();
 ```
 
 ### Faking scheduler run time
