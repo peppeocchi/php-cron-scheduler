@@ -373,7 +373,7 @@ class Job
         $this->createLockFile();
 
         if (is_callable($this->before)) {
-            call_user_func($this->before, $this);
+            call_user_func($this->before);
         }
 
         if (is_callable($compiled)) {
