@@ -278,6 +278,19 @@ $scheduler->php('script.php')->onlyOne(null, function ($lastExecutionTime) {
 });
 ```
 
+### Before job execution
+
+In some cases you might want to run some code, if the job is due to run, before it's being executed.
+For example you might want to add a log entry, ping a url or anything else.
+To do so, you can call the `before` like the example below.
+
+```php
+// $logger here is your own implementation
+$scheduler->php('script.php')->before(function () use ($logger) {
+    $logger->info("script.php started at " . time());
+});
+```
+
 ### After job execution
 
 Sometime you might wish to do something after a job runs. The `then` methods provides you the flexibility to do anything you want after the job execution. The output of the job will be injected to this function.
@@ -295,6 +308,21 @@ $scheduler->php('script.php')->then(function ($output) use ($logger, $messenger)
 $scheduler->php('script.php')->then(function ($output) use ($logger) {
     $logger->info('Job executed!');
 }, true);
+```
+
+#### Using "before" and "then" together
+
+```php
+// $logger here is your own implementation
+$scheduler->php('script.php')
+    ->before(function () use ($logger) {
+        $logger->info("script.php started at " . time());
+    })
+    ->then(function ($output) use ($logger) {
+        $logger->info("script.php completed at " . time(), [
+            'output' => $output,
+        ]);
+    });
 ```
 
 ### Multiple scheduler runs
