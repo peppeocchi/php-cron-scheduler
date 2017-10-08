@@ -285,14 +285,15 @@ For example you might want to add an entry to you logs, ping a url etc...
 By default, the job will be forced to run in foreground (because the output is injected to the function), if you don't need the output, you can pass `true` as a second parameter to allow the execution in background (in this case `$output` will be empty).
 
 ```php
+// $logger and $messenger here are your own implementation
 $scheduler->php('script.php')->then(function ($output) use ($logger, $messenger) {
     $logger->info($output);
 
     $messenger->ping('myurl.com', $output);
 });
 
-$scheduler->php('script.php')->then(function ($output) {
-    log('Job executed!');
+$scheduler->php('script.php')->then(function ($output) use ($logger) {
+    $logger->info('Job executed!');
 }, true);
 ```
 

@@ -110,6 +110,13 @@ class Job
     private $emailConfig = [];
 
     /**
+     * A function to execute before the job is executed.
+     *
+     * @var callable
+     */
+    private $before;
+
+    /**
      * A function to execute after the job is executed.
      *
      * @var callable
@@ -365,6 +372,10 @@ class Job
         // Write lock file if necessary
         $this->createLockFile();
 
+        if (is_callable($this->before)) {
+            call_user_func($this->before);
+        }
+
         if (is_callable($compiled)) {
             $this->output = $this->exec($compiled);
         } else {
@@ -517,6 +528,20 @@ class Job
         $this->sendToEmails($this->outputTo);
 
         return true;
+    }
+
+    /**
+     * Set function to be called before job execution
+     * Job object is injected as a parameter to callable function.
+     *
+     * @param callable $fn
+     * @return self
+     */
+    public function before(callable $fn)
+    {
+        $this->before = $fn;
+
+        return $this;
     }
 
     /**

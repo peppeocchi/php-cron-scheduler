@@ -353,6 +353,24 @@ class JobTest extends TestCase
         $this->assertEquals(['hi'], $job3->getOutput());
     }
 
+    public function testShouldRunCallbackBeforeJobExecution()
+    {
+        $job = new Job(function () {
+            return 'Job for testing before function';
+        });
+
+        $callbackWasExecuted = false;
+        $outputWasSet = false;
+
+        $job->before(function () use ($job, &$callbackWasExecuted, &$outputWasSet) {
+            $callbackWasExecuted = true;
+            $outputWasSet = ! is_null($job->getOutput());
+        })->run();
+
+        $this->assertTrue($callbackWasExecuted);
+        $this->assertFalse($outputWasSet);
+    }
+
     public function testShouldRunCallbackAfterJobExecution()
     {
         $job = new Job(function () {
