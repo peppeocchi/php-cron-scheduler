@@ -460,4 +460,28 @@ class JobTest extends TestCase
 
         $this->assertTrue($job->canRunInBackground());
     }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testShouldThrowExceptionIfForegroundJobIsNotRunnable()
+    {
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../test_job.php';
+        $job = new Job($command, [], null, function () {
+            throw new \InvalidArgumentException();
+        });
+        $job->inForeground()->run();
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testShouldThrowExceptionIfBackgroundJobIsNotRunnable()
+    {
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../test_job.php';
+        $job = new Job($command, [], null, function () {
+            throw new \InvalidArgumentException();
+        });
+        $job->run();
+    }
 }

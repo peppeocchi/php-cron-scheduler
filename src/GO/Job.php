@@ -137,13 +137,20 @@ class Job
     private $outputMode;
 
     /**
+     * @var callable
+     * @throws \Exception
+     */
+    private $checkRunnable;
+
+    /**
      * Create a new Job instance.
      *
      * @param  string|callable  $command
      * @param  array            $args
      * @param  string           $id
+     * @param  callable         $isRunnable
      */
-    public function __construct($command, $args = [], $id = null)
+    public function __construct($command, $args = [], $id = null, $isRunnable = null)
     {
         if (is_string($id)) {
             $this->id = $id;
@@ -154,6 +161,10 @@ class Job
                 /* @var object $command */
                 $this->id = spl_object_hash($command);
             }
+        }
+
+        if ($isRunnable && is_callable($isRunnable)) {
+            $this->checkRunnable = $isRunnable;
         }
 
         $this->creationTime = new DateTime('now');
@@ -365,6 +376,11 @@ class Job
         // If overlapping, don't run
         if ($this->isOverlapping()) {
             return false;
+        }
+
+        // Throws exception if not runnable
+        if (is_callable($this->checkRunnable)) {
+            call_user_func($this->checkRunnable);
         }
 
         $compiled = $this->compile();
