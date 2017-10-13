@@ -119,6 +119,10 @@ class Scheduler
      */
     public function php($script, $bin = null, $args = [], $id = null)
     {
+        if (! is_string($script) || ! file_exists($script)) {
+            throw new InvalidArgumentException("The script should be a valid path to a file.");
+        }
+
         $bin = $bin !== null && is_string($bin) && file_exists($bin) ?
             $bin : (PHP_BINARY === '' ? '/usr/bin/php' : PHP_BINARY);
 

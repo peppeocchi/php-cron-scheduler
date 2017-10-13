@@ -30,6 +30,30 @@ class SchedulerTest extends TestCase
         $this->assertEquals(count($scheduler->getQueuedJobs()), 1);
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testShouldThrowExceptionIfScriptIsNotAString()
+    {
+        $scheduler = new Scheduler();
+        $scheduler->php(function () {
+            //
+        });
+
+        $scheduler->run();
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testShouldThrowExceptionIfScriptPathIsInvalid()
+    {
+        $scheduler = new Scheduler();
+        $scheduler->php('someInvalidPathToAScript');
+
+        $scheduler->run();
+    }
+
     public function testShouldQueueAShellCommand()
     {
         $scheduler = new Scheduler();
