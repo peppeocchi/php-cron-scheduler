@@ -37,7 +37,7 @@ class SchedulerTest extends TestCase
     {
         $scheduler = new Scheduler();
         $scheduler->php(function () {
-            //
+            return false;
         });
 
         $scheduler->run();
