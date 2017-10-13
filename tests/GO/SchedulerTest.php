@@ -30,10 +30,7 @@ class SchedulerTest extends TestCase
         $this->assertEquals(count($scheduler->getQueuedJobs()), 1);
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testShouldThrowExceptionIfScriptIsNotAString()
+    public function testShouldFailJobIfScriptIsNotAString()
     {
         $scheduler = new Scheduler();
         $scheduler->php(function () {
@@ -41,17 +38,16 @@ class SchedulerTest extends TestCase
         });
 
         $scheduler->run();
+        $this->assertEquals(count($scheduler->getFailedJobs()), 1);
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testShouldThrowExceptionIfScriptPathIsInvalid()
+    public function testShouldFailJobIfScriptPathIsInvalid()
     {
         $scheduler = new Scheduler();
         $scheduler->php('someInvalidPathToAScript');
 
         $scheduler->run();
+        $this->assertEquals(count($scheduler->getFailedJobs()), 1);
     }
 
     public function testShouldQueueAShellCommand()

@@ -120,13 +120,17 @@ class Scheduler
     public function php($script, $bin = null, $args = [], $id = null)
     {
         if (! is_string($script) || ! file_exists($script)) {
-            throw new InvalidArgumentException('The script should be a valid path to a file.');
+            $script = '';
         }
 
         $bin = $bin !== null && is_string($bin) && file_exists($bin) ?
             $bin : (PHP_BINARY === '' ? '/usr/bin/php' : PHP_BINARY);
 
-        $job = new Job($bin . ' ' . $script, $args, $id);
+        $job = new Job($bin . ' ' . $script, $args, $id, function () use ($script) {
+            if (empty($script)) {
+                throw new InvalidArgumentException('The script should be a valid path to a file.');
+            }
+        });
 
         $this->queueJob($job->configure($this->config));
 
@@ -164,6 +168,7 @@ class Scheduler
             $runTime = new DateTime('now');
         }
 
+        /** @var Job $job */
         foreach ($jobs as $job) {
             if ($job->isDue($runTime)) {
                 try {
