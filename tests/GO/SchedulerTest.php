@@ -30,6 +30,22 @@ class SchedulerTest extends TestCase
         $this->assertEquals(count($scheduler->getQueuedJobs()), 1);
     }
 
+    public function testShouldAllowCustomPhpBin()
+    {
+        $scheduler = new Scheduler();
+        $script = __DIR__ . '/../test_job.php';
+
+        // Create fake bin
+        $bin = __DIR__ . '/../custom_bin';
+        touch($bin);
+
+        $job = $scheduler->php($script, $bin)->inForeground();
+
+        $this->assertEquals($bin . ' ' . $script, $job->compile());
+
+        unlink($bin);
+    }
+
     /**
      * @expectedException InvalidArgumentException
      */
