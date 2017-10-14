@@ -1,5 +1,6 @@
 <?php namespace GO\Job\Tests;
 
+use GO\Job;
 use DateTime;
 use GO\Scheduler;
 use PHPUnit\Framework\TestCase;
@@ -73,15 +74,15 @@ class SchedulerTest extends TestCase
         $scheduler->run();
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testShouldThrowExceptionIfScriptPathIsInvalid()
+    public function testShouldMarkJobAsFailedIfScriptPathIsInvalid()
     {
         $scheduler = new Scheduler();
         $scheduler->php('someInvalidPathToAScript');
 
         $scheduler->run();
+        $fail = $scheduler->getFailedJobs();
+        $this->assertCount(1, $fail);
+        $this->assertContainsOnlyInstancesOf(Job::class, $fail);
     }
 
     public function testShouldQueueAShellCommand()
