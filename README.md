@@ -360,3 +360,6 @@ The resons for this feature are described [here](https://github.com/peppeocchi/p
 $fakeRunTime = new DateTime('2017-09-13 00:00:00');
 $scheduler->run($fakeRunTime);
 ```
+
+## License
+[The MIT License (MIT)](LICENSE)
