@@ -42,9 +42,9 @@ trait Mailer
      */
     private function sendToEmails(array $files)
     {
-        $mailer = new \Swift_Mailer($this->emailConfig['transport']);
-
         $config = $this->getEmailConfig();
+
+        $mailer = new \Swift_Mailer($config['transport']);
 
         $message = (new \Swift_Message())
             ->setSubject($config['subject'])
