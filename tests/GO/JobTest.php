@@ -172,11 +172,11 @@ class JobTest extends TestCase
 
         @unlink($lockFile);
 
-        $this->assertFalse(file_exists($lockFile));
+        $this->assertFileNotExists($lockFile);
 
         $job->onlyOne()->run();
 
-        $this->assertTrue(file_exists($lockFile));
+        $this->assertFileExists($lockFile);
     }
 
     public function testShouldCreateLockFilesInCustomPath()
@@ -190,11 +190,11 @@ class JobTest extends TestCase
 
         @unlink($lockFile);
 
-        $this->assertFalse(file_exists($lockFile));
+        $this->assertFileNotExists($lockFile);
 
         $job->onlyOne($tmpDir)->run();
 
-        $this->assertTrue(file_exists($lockFile));
+        $this->assertFileExists($lockFile);
     }
 
     public function testShouldRemoveLockFileAfterRunningClosures()
@@ -209,7 +209,7 @@ class JobTest extends TestCase
 
         $job->onlyOne($tmpDir)->run();
 
-        $this->assertFalse(file_exists($lockFile));
+        $this->assertFileNotExists($lockFile);
     }
 
     public function testShouldRemoveLockFileAfterRunningCommands()
@@ -225,11 +225,11 @@ class JobTest extends TestCase
 
         sleep(1);
 
-        $this->assertTrue(file_exists($lockFile));
+        $this->assertFileExists($lockFile);
 
         sleep(5);
 
-        $this->assertFalse(file_exists($lockFile));
+        $this->assertFileNotExists($lockFile);
     }
 
     public function testShouldKnowIfOverlapping()
@@ -291,7 +291,7 @@ class JobTest extends TestCase
         // The job should run now as the function should now return true,
         // while it's still being executed
         $lockFile = $tmpDir . '/' . $job->getId() . '.lock';
-        $this->assertTrue(file_exists($lockFile));
+        $this->assertFileExists($lockFile);
         $this->assertTrue($job->run());
     }
 
@@ -308,7 +308,7 @@ class JobTest extends TestCase
 
         sleep(1);
 
-        $this->assertTrue(file_exists($tmpDir . '/' . $job->getId() . '.lock'));
+        $this->assertFileExists($tmpDir . '/' . $job->getId() . '.lock');
     }
 
     public function testWhenMethodShouldBeChainable()

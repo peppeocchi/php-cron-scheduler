@@ -138,7 +138,7 @@ class SchedulerTest extends TestCase
 
         @unlink($outputFile);
 
-        $this->assertFalse(file_exists($outputFile));
+        $this->assertFileNotExists($outputFile);
 
         $scheduler->run();
 

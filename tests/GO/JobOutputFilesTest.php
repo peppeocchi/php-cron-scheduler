@@ -14,11 +14,11 @@ class JobOutputFilesTest extends TestCase
         @unlink($outputFile);
 
         // Test fist that the file doesn't exist yet
-        $this->assertFalse(file_exists($outputFile));
+        $this->assertFileNotExists($outputFile);
         $job->output($outputFile)->run();
 
         sleep(2);
-        $this->assertTrue(file_exists($outputFile));
+        $this->assertFileExists($outputFile);
 
         // Content should be 'hi'
         $this->assertEquals('hi', file_get_contents($outputFile));
@@ -39,9 +39,9 @@ class JobOutputFilesTest extends TestCase
         @unlink($outputFile3);
 
         // Test fist that the file doesn't exist yet
-        $this->assertFalse(file_exists($outputFile1));
-        $this->assertFalse(file_exists($outputFile2));
-        $this->assertFalse(file_exists($outputFile3));
+        $this->assertFileNotExists($outputFile1);
+        $this->assertFileNotExists($outputFile2);
+        $this->assertFileNotExists($outputFile3);
         $job->output([
             $outputFile1,
             $outputFile2,
@@ -49,9 +49,9 @@ class JobOutputFilesTest extends TestCase
         ])->run();
 
         sleep(2);
-        $this->assertTrue(file_exists($outputFile1));
-        $this->assertTrue(file_exists($outputFile2));
-        $this->assertTrue(file_exists($outputFile3));
+        $this->assertFileExists($outputFile1);
+        $this->assertFileExists($outputFile2);
+        $this->assertFileExists($outputFile3);
 
         $this->assertEquals('hi', file_get_contents($outputFile1));
         $this->assertEquals('hi', file_get_contents($outputFile2));
@@ -74,11 +74,11 @@ class JobOutputFilesTest extends TestCase
         @unlink($outputFile);
 
         // Test fist that the file doesn't exist yet
-        $this->assertFalse(file_exists($outputFile));
+        $this->assertFileNotExists($outputFile);
         $job->output($outputFile)->run();
 
         sleep(2);
-        $this->assertTrue(file_exists($outputFile));
+        $this->assertFileExists($outputFile);
 
         $this->assertEquals('Hello World!', file_get_contents($outputFile));
 
@@ -99,9 +99,9 @@ class JobOutputFilesTest extends TestCase
         @unlink($outputFile3);
 
         // Test fist that the file doesn't exist yet
-        $this->assertFalse(file_exists($outputFile1));
-        $this->assertFalse(file_exists($outputFile2));
-        $this->assertFalse(file_exists($outputFile3));
+        $this->assertFileNotExists($outputFile1);
+        $this->assertFileNotExists($outputFile2);
+        $this->assertFileNotExists($outputFile3);
         $job->output([
             $outputFile1,
             $outputFile2,
@@ -109,9 +109,9 @@ class JobOutputFilesTest extends TestCase
         ])->run();
 
         sleep(2);
-        $this->assertTrue(file_exists($outputFile1));
-        $this->assertTrue(file_exists($outputFile2));
-        $this->assertTrue(file_exists($outputFile3));
+        $this->assertFileExists($outputFile1);
+        $this->assertFileExists($outputFile2);
+        $this->assertFileExists($outputFile3);
 
         $this->assertEquals('Hello', file_get_contents($outputFile1));
         $this->assertEquals('Hello', file_get_contents($outputFile2));
@@ -130,11 +130,11 @@ class JobOutputFilesTest extends TestCase
         $outputFile = __DIR__ . '/../tmp/output1.log';
 
         // Test fist that the file doesn't exist yet
-        $this->assertFalse(file_exists($outputFile));
+        $this->assertFileNotExists($outputFile);
         $job->output($outputFile)->run();
 
         sleep(2);
-        $this->assertTrue(file_exists($outputFile));
+        $this->assertFileExists($outputFile);
 
         $this->assertEquals('Hello World!', file_get_contents($outputFile));
 
@@ -155,9 +155,9 @@ class JobOutputFilesTest extends TestCase
         @unlink($outputFile3);
 
         // Test fist that the file doesn't exist yet
-        $this->assertFalse(file_exists($outputFile1));
-        $this->assertFalse(file_exists($outputFile2));
-        $this->assertFalse(file_exists($outputFile3));
+        $this->assertFileNotExists($outputFile1);
+        $this->assertFileNotExists($outputFile2);
+        $this->assertFileNotExists($outputFile3);
         $job->output([
             $outputFile1,
             $outputFile2,
@@ -165,9 +165,9 @@ class JobOutputFilesTest extends TestCase
         ])->run();
 
         sleep(2);
-        $this->assertTrue(file_exists($outputFile1));
-        $this->assertTrue(file_exists($outputFile2));
-        $this->assertTrue(file_exists($outputFile3));
+        $this->assertFileExists($outputFile1);
+        $this->assertFileExists($outputFile2);
+        $this->assertFileExists($outputFile3);
 
         $this->assertEquals('Hello World!', file_get_contents($outputFile1));
         $this->assertEquals('Hello World!', file_get_contents($outputFile2));
@@ -188,11 +188,11 @@ class JobOutputFilesTest extends TestCase
         $outputFile = __DIR__ . '/../tmp/output1.log';
 
         // Test fist that the file doesn't exist yet
-        $this->assertFalse(file_exists($outputFile));
+        $this->assertFileNotExists($outputFile);
         $job->output($outputFile)->run();
 
         sleep(2);
-        $this->assertTrue(file_exists($outputFile));
+        $this->assertFileExists($outputFile);
 
         $this->assertEquals('Hello World!', file_get_contents($outputFile));
 
