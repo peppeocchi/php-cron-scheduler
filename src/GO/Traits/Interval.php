@@ -387,6 +387,6 @@ trait Interval
             );
         }
 
-        return $value;
+        return (int) $value;
     }
 }
