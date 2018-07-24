@@ -89,14 +89,26 @@ class JobTest extends TestCase
         $this->assertEquals("ls '-l' '-arg' 'value'", $job->inForeground()->compile());
     }
 
-    public function testShouldCompileCommandInBackground()
+    public function testShouldCompileUnixCommandInBackground()
     {
+        $this->assertFalse(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
+        
         $job1 = new Job('ls');
         $job1->at('* * * * *');
 
         $this->assertEquals('(ls) > /dev/null 2>&1 &', $job1->compile());
     }
+    
+    public function testShouldCompileWinCommandInBackground()
+    {
+        $this->assertTrue(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
+        
+        $job1 = new Job('dir');
+        $job1->at('* * * * *');
 
+        $this->assertEquals('(dir) > NUL 2>&1 &', $job1->compile());
+    }
+    
     public function testShouldRunInBackground()
     {
         // This script has a 5 seconds sleep
