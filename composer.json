@@ -1,6 +1,6 @@
 {
-    "name": "peppeocchi/php-cron-scheduler",
-    "description": "PHP Cron Job Scheduler",
+    "name": "lukasmarousek/php-cron-scheduler-with-win-cmd-support",
+    "description": "PHP Cron Job Scheduler With WIN Command Support",
     "license": "MIT",
     "keywords": ["cron job", "scheduler"],
     "authors": [
