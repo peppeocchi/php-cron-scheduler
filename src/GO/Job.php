@@ -308,7 +308,12 @@ class Job
         if ($this->canRunInBackground()) {
             // Parentheses are need execute the chain of commands in a subshell
             // that can then run in background
-            $compiled = '(' . $compiled . ') > /dev/null 2>&1 &';
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                $compiled = '(' . $compiled . ') > NUL 2>&1 &';
+            }
+            else {
+                $compiled = '(' . $compiled . ') > /dev/null 2>&1 &';
+            }
         }
 
         return trim($compiled);
