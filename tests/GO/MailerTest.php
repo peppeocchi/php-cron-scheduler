@@ -161,6 +161,6 @@ class MailerTest extends TestCase
         $outputFile = __DIR__ . '/../tmp/output.log';
         $this->assertTrue($job->output($outputFile)->email('local@localhost.com')->run());
 
-        unlink($outputFile);
+        @unlink($outputFile);
     }
 }
