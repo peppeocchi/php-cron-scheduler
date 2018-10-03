@@ -532,7 +532,6 @@ class Job
             return false;
         }
 
-
         $this->sendToEmails($this->outputTo);
 
         return true;
