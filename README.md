@@ -188,6 +188,7 @@ You can configure:
 - `from` - The email address set as sender
 - `body` - The body of the email
 - `transport` - The transport to use. For example if you want to use your gmail account or any other SMTP account. The value should be an instance of `Swift_Tranport`
+- `ignore_empty_output` - If this is set to `true`, jobs that return no output won't fire any email.
 
 The configuration can be set "globally" for all the scheduler commands, when creating the scheduler.
 
@@ -198,8 +199,9 @@ $scheduler = new Scheduler([
         'from' => 'cron@email.com',
         'body' => 'This is the daily visitors count',
         'transport' => Swift_SmtpTransport::newInstance('smtp.gmail.com', 465, 'ssl')
-                            ->setUsername('username')
-                            ->setPassword('password');
+            ->setUsername('username')
+            ->setPassword('password'),
+        'ignore_empty_output' => false,
     ]
 ]);
 ```

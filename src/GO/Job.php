@@ -505,10 +505,8 @@ class Job
      */
     private function finalise()
     {
-        if (! isset($this->emailConfig['ignore_empty_output']) || $this->emailConfig['ignore_empty_output'] === false) {
-            // Send output to email
-            $this->emailOutput();
-        }
+        // Send output to email
+        $this->emailOutput();
 
         // Call any callback defined
         if (is_callable($this->after)) {
@@ -526,6 +524,14 @@ class Job
         if (! count($this->outputTo) || ! count($this->emailTo)) {
             return false;
         }
+
+        if (isset($this->emailConfig['ignore_empty_output']) &&
+            $this->emailConfig['ignore_empty_output'] === true &&
+            empty($this->output)
+        ) {
+            return false;
+        }
+
 
         $this->sendToEmails($this->outputTo);
 
