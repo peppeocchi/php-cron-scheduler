@@ -159,7 +159,7 @@ class MailerTest extends TestCase
         $job->configure($nullTransportConfig);
 
         $outputFile = __DIR__ . '/../tmp/output.log';
-        $this->assertTrue($job1->output($outputFile)->email('local@localhost.com')->run());
+        $this->assertTrue($job->output($outputFile)->email('local@localhost.com')->run());
 
         unlink($outputFile);
     }
