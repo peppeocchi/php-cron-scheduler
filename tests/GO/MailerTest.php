@@ -142,4 +142,25 @@ class MailerTest extends TestCase
 
         unlink($outputFile);
     }
+
+    public function testShouldIgnoreEmailIfSpecifiedInConfig()
+    {
+        $job = new Job(function () {
+            $tot = 1 + 2;
+            // Return nothing....
+        });
+
+        $nullTransportConfig = [
+            'email' => [
+                'transport' => new \Swift_NullTransport(),
+                'ignore_empty_output' => true,
+            ],
+        ];
+        $job->configure($nullTransportConfig);
+
+        $outputFile = __DIR__ . '/../tmp/output.log';
+        $this->assertTrue($job->output($outputFile)->email('local@localhost.com')->run());
+
+        @unlink($outputFile);
+    }
 }

@@ -525,6 +525,13 @@ class Job
             return false;
         }
 
+        if (isset($this->emailConfig['ignore_empty_output']) &&
+            $this->emailConfig['ignore_empty_output'] === true &&
+            empty($this->output)
+        ) {
+            return false;
+        }
+
         $this->sendToEmails($this->outputTo);
 
         return true;
