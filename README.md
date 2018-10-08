@@ -175,9 +175,7 @@ $scheduler->php('script.php')->output([
     // If you specify multiple files, both will be attached to the email
     'my_file1.log', 'my_file2.log'
 ])->email([
-    [
-        'someemail@mail.com' => 'My custom name'
-    ],
+    'someemail@mail.com' => 'My custom name'
     'someotheremail@mail.com'
 ]);
 ```

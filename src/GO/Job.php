@@ -179,7 +179,7 @@ class Job
      * Check if the Job is due to run.
      * It accepts as input a DateTime used to check if
      * the job is due. Defaults to job creation time.
-     * It also default the execution time if not previously defined.
+     * It also defaults the execution time if not previously defined.
      *
      * @param  DateTime  $date
      * @return bool
