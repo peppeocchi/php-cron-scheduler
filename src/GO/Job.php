@@ -52,6 +52,13 @@ class Job
     private $executionTime;
 
     /**
+     * Job schedule year.
+     *
+     * @var string
+     */
+    private $executionYear = null;
+
+    /**
      * Temporary directory path for
      * lock files to prevent overlapping.
      *
@@ -192,6 +199,10 @@ class Job
         }
 
         $date = $date !== null ? $date : $this->creationTime;
+
+        if ($this->executionYear && $this->executionYear !== $date->format('Y')) {
+            return false;
+        }
 
         return $this->executionTime->isDue($date);
     }

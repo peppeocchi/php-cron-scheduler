@@ -228,4 +228,40 @@ class IntervalTest extends TestCase
         $this->assertTrue($job->monthly(null, 15, '12:21')->isDue($date2));
         $this->assertFalse($job->monthly(null, 15, '12:21')->isDue($date3));
     }
+
+    public function testShouldRunAtSpecificDate()
+    {
+        $job = new Job('ls');
+
+        $date = '2018-01-01';
+
+        // As instance of datetime
+        $this->assertTrue($job->date(new \DateTime($date))->isDue(new \DateTime($date)));
+        // As date string
+        $this->assertTrue($job->date($date)->isDue(new \DateTime($date)));
+        // Fail for different day
+        $this->assertFalse($job->date($date)->isDue(new \DateTime('2018-01-02')));
+    }
+
+    public function testShouldRunAtSpecificDateTime()
+    {
+        $job = new Job('ls');
+
+        $date = '2018-01-01 12:20';
+
+        // As instance of datetime
+        $this->assertTrue($job->date(new \DateTime($date))->isDue(new \DateTime($date)));
+        // As date string
+        $this->assertTrue($job->date($date)->isDue(new \DateTime($date)));
+        // Fail for different time
+        $this->assertFalse($job->date($date)->isDue(new \DateTime('2018-01-01 12:21')));
+    }
+
+    public function testShouldFailIfDifferentYear()
+    {
+        $job = new Job('ls');
+
+        // As instance of datetime
+        $this->assertFalse($job->date('2018-01-01')->isDue(new \DateTime('2019-01-01')));
+    }
 }

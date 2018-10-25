@@ -145,6 +145,51 @@ If you don't call any of this method, the job will run every minute (* * * * *).
     $scheduler->php('script.php')->daily('22:03');
     ```
 
+There are additional helpers for weekdays (all accepting optionals hour and minute - defaulted at 00:00)
+- `sunday`
+- `monday`
+- `tuesday`
+- `wednesday`
+- `thursday`
+- `friday`
+- `saturday`
+
+```php
+$scheduler->php('script.php')->saturday();
+$scheduler->php('script.php')->friday(18);
+$scheduler->php('script.php')->sunday(12, 30);
+```
+
+And additional helpers for months (all accepting optionals day, hour and minute - defaulted to the 1st of the month at 00:00)
+- `january`
+- `february`
+- `march`
+- `april`
+- `may`
+- `june`
+- `july`
+- `august`
+- `september`
+- `october`
+- `november`
+- `december`
+
+```php
+$scheduler->php('script.php')->january();
+$scheduler->php('script.php')->december(25);
+$scheduler->php('script.php')->august(15, 20, 30);
+```
+
+You can also specify a `date` for when the job should run.
+The date can be specified as string or as instance of `DateTime`. In both cases you can specify the date only (e.g. 2018-01-01) or the time as well (e.g. 2018-01-01 10:30), if you don't specify the time it will run at 00:00 on that date.
+If you're providing a date in a "non standard" format, it is strongly adviced to pass an instance of `DateTime`. If you're using `createFromFormat` without specifying a time, and you want to default it to 00:00, just make sure to add a `!` to the date format, otherwise the time would be the current time. [Read more](http://php.net/manual/en/datetime.createfromformat.php)
+
+```php
+$scheduler->php('script.php')->date('2018-01-01 12:20');
+$scheduler->php('script.php')->date(new DateTime('2018-01-01'));
+$scheduler->php('script.php')->date(DateTime::createFromFormat('!d/m Y', '01/01 2018'));
+```
+
 ### Send output to file/s
 
 You can define one or multiple files where you want the output of your script/command/function execution to be sent to.
