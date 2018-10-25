@@ -1,7 +1,7 @@
 <?php namespace GO\Traits;
 
-use Cron\CronExpression;
 use DateTime;
+use Cron\CronExpression;
 use InvalidArgumentException;
 
 trait Interval
