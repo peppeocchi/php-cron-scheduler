@@ -1,6 +1,7 @@
 <?php namespace GO\Traits;
 
 use Cron\CronExpression;
+use DateTime;
 use InvalidArgumentException;
 
 trait Interval
@@ -16,6 +17,23 @@ trait Interval
         $this->executionTime = CronExpression::factory($expression);
 
         return $this;
+    }
+
+    /**
+     * Run the Job at a specific date.
+     *
+     * @param  string/DateTime  $date
+     * @return self
+     */
+    public function date($date)
+    {
+        if (! $date instanceof DateTime) {
+            $date = new DateTime($date);
+        }
+
+        $this->executionYear = $date->format('Y');
+
+        return $this->at("{$date->format('i')} {$date->format('H')} {$date->format('d')} {$date->format('m')} *");
     }
 
     /**
