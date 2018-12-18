@@ -19,10 +19,12 @@ trait Mailer
             $this->emailConfig['from'] = ['cronjob@server.my' => 'My Email Server'];
         }
 
+        $outputInBody = ! empty($this->emailConfig['outputInBody']);
+
         if (! isset($this->emailConfig['body']) ||
             ! is_string($this->emailConfig['body'])
         ) {
-            $this->emailConfig['body'] = 'Cronjob output attached';
+            $this->emailConfig['body'] = $outputInBody ? 'Cronjob output:' . PHP_EOL : 'Cronjob output attached';
         }
 
         if (! isset($this->emailConfig['transport']) ||
@@ -46,15 +48,25 @@ trait Mailer
 
         $mailer = new \Swift_Mailer($config['transport']);
 
+        $body = $config['body'];
+
+        $outputInBody = ! empty($this->emailConfig['outputInBody']);
+
+        if ($outputInBody) {
+            $body .= implode(PHP_EOL, $this->output);
+        }
         $message = (new \Swift_Message())
             ->setSubject($config['subject'])
             ->setFrom($config['from'])
             ->setTo($this->emailTo)
-            ->setBody($config['body'])
-            ->addPart('<q>Cronjob output attached</q>', 'text/html');
+            ->setBody($body);
 
-        foreach ($files as $filename) {
-            $message->attach(\Swift_Attachment::fromPath($filename));
+        if (! $outputInBody) {
+            $message->addPart('<q>Cronjob output attached</q>', 'text/html');
+
+            foreach ($files as $filename) {
+                $message->attach(\Swift_Attachment::fromPath($filename));
+            }
         }
 
         $mailer->send($message);
