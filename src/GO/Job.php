@@ -15,8 +15,16 @@ class Job
      * @var string
      */
     private $id;
-
+  
     /**
+     * PID.
+     *
+     * @var string
+     */
+    private $pid = null;
+    
+  
+  /**
      * Command to execute.
      *
      * @var mixed
@@ -171,6 +179,16 @@ class Job
         $this->command = $command;
         $this->args = $args;
     }
+  
+    /**
+     * Get the PID.
+     *
+     * @return string
+     */
+    public function getPid()
+    {
+      return $this->pid;
+    }
 
     /**
      * Get the Job id.
@@ -319,7 +337,7 @@ class Job
         if ($this->canRunInBackground()) {
             // Parentheses are need execute the chain of commands in a subshell
             // that can then run in background
-            $compiled = '(' . $compiled . ') > /dev/null 2>&1 &';
+            $compiled = '(' . $compiled . ') > /dev/null 2>&1 & echo $!';
         }
 
         return trim($compiled);
@@ -391,6 +409,7 @@ class Job
             $this->output = $this->exec($compiled);
         } else {
             exec($compiled, $this->output, $this->returnCode);
+            $this->pid = intval($this->output[0]);
         }
 
         $this->finalise();
