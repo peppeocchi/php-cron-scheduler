@@ -264,4 +264,14 @@ class IntervalTest extends TestCase
         // As instance of datetime
         $this->assertFalse($job->date('2018-01-01')->isDue(new \DateTime('2019-01-01')));
     }
+
+    public function testEveryMinuteWithParameter()
+    {
+        $job = new Job('ls');
+
+        // Job should run at 10:00, 10:05, 10:10 etc., but not at 10:02
+        $this->assertTrue($job->everyMinute(5)->isDue(\DateTime::createFromFormat('H:i', '10:00')));
+        $this->assertFalse($job->everyMinute(5)->isDue(\DateTime::createFromFormat('H:i', '10:02')));
+        $this->assertTrue($job->everyMinute(5)->isDue(\DateTime::createFromFormat('H:i', '10:05')));
+    }
 }
