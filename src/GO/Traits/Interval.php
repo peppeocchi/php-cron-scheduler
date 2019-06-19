@@ -48,10 +48,10 @@ trait Interval
         $minuteExpression = '*';
         if ($minute !== null) {
             $c = $this->validateCronSequence($minute);
-            $minuteExpression = '*/'.$c['minute'];
+            $minuteExpression = '*/' . $c['minute'];
         }
 
-        return $this->at($minuteExpression.' * * * *');
+        return $this->at($minuteExpression . ' * * * *');
     }
 
     /**
