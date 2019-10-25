@@ -63,7 +63,7 @@ $scheduler->php('path/to/my/script.php');
 The `php` method accepts 4 arguments:
 - The path to your php script
 - The PHP binary to use
-- Arguments to be passed to the script
+- Arguments to be passed to the script (**NOTE**: You need to have **register_argc_argv** enable in your php.ini for this to work ([ref](https://github.com/peppeocchi/php-cron-scheduler/issues/88)). Don't worry it's enabled by default, so unlessy you've intentionally disabled it or your host has it disabled by default, you can ignore it.)
 - Identifier
 ```php
 $scheduler->php(
