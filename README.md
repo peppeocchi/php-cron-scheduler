@@ -18,10 +18,12 @@ or add the package to your `composer.json`
 ```json
 {
     "require": {
-        "peppeocchi/php-cron-scheduler": "2.*"
+        "peppeocchi/php-cron-scheduler": "3.*"
     }
 }
 ```
+
+Scheduler V3 requires php >= 7.1, please use the [v2 branch](https://github.com/peppeocchi/php-cron-scheduler/tree/v2.x) for php versions < 7.1.
 
 ## How it works
 
@@ -125,7 +127,7 @@ $scheduler->call(
 There are a few methods to help you set the execution time of your schedules.
 If you don't call any of this method, the job will run every minute (* * * * *).
 
-- `at` - This method accepts any expression supported by [mtdowling/cron-expression](https://github.com/mtdowling/cron-expression)
+- `at` - This method accepts any expression supported by [dragonmantank/cron-expression](https://github.com/dragonmantank/cron-expression)
     ```php
     $scheduler->php('script.php')->at('* * * * *');
     ```
