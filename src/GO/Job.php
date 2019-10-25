@@ -52,6 +52,13 @@ class Job
     private $executionTime;
 
     /**
+     * Job schedule year.
+     *
+     * @var string
+     */
+    private $executionYear = null;
+
+    /**
      * Temporary directory path for
      * lock files to prevent overlapping.
      *
@@ -179,7 +186,7 @@ class Job
      * Check if the Job is due to run.
      * It accepts as input a DateTime used to check if
      * the job is due. Defaults to job creation time.
-     * It also default the execution time if not previously defined.
+     * It also defaults the execution time if not previously defined.
      *
      * @param  DateTime  $date
      * @return bool
@@ -192,6 +199,10 @@ class Job
         }
 
         $date = $date !== null ? $date : $this->creationTime;
+
+        if ($this->executionYear && $this->executionYear !== $date->format('Y')) {
+            return false;
+        }
 
         return $this->executionTime->isDue($date);
     }
@@ -522,6 +533,13 @@ class Job
     private function emailOutput()
     {
         if (! count($this->outputTo) || ! count($this->emailTo)) {
+            return false;
+        }
+
+        if (isset($this->emailConfig['ignore_empty_output']) &&
+            $this->emailConfig['ignore_empty_output'] === true &&
+            empty($this->output)
+        ) {
             return false;
         }
 

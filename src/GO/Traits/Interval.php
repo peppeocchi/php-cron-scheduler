@@ -1,5 +1,6 @@
 <?php namespace GO\Traits;
 
+use DateTime;
 use Cron\CronExpression;
 use InvalidArgumentException;
 
@@ -19,13 +20,38 @@ trait Interval
     }
 
     /**
+     * Run the Job at a specific date.
+     *
+     * @param  string/DateTime  $date
+     * @return self
+     */
+    public function date($date)
+    {
+        if (! $date instanceof DateTime) {
+            $date = new DateTime($date);
+        }
+
+        $this->executionYear = $date->format('Y');
+
+        return $this->at("{$date->format('i')} {$date->format('H')} {$date->format('d')} {$date->format('m')} *");
+    }
+
+    /**
      * Set the execution time to every minute.
+     *
+     * @param int|string|null When set, specifies that the job will be run every $minute minutes
      *
      * @return self
      */
-    public function everyMinute()
+    public function everyMinute($minute = null)
     {
-        return $this->at('* * * * *');
+        $minuteExpression = '*';
+        if ($minute !== null) {
+            $c = $this->validateCronSequence($minute);
+            $minuteExpression = '*/' . $c['minute'];
+        }
+
+        return $this->at($minuteExpression . ' * * * *');
     }
 
     /**

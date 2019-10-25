@@ -1,5 +1,6 @@
 <?php namespace GO\Job\Tests;
 
+use GO\Job;
 use DateTime;
 use GO\Scheduler;
 use PHPUnit\Framework\TestCase;
@@ -30,6 +31,36 @@ class SchedulerTest extends TestCase
         $this->assertEquals(count($scheduler->getQueuedJobs()), 1);
     }
 
+    public function testShouldAllowCustomPhpBin()
+    {
+        $scheduler = new Scheduler();
+        $script = __DIR__ . '/../test_job.php';
+
+        // Create fake bin
+        $bin = __DIR__ . '/../custom_bin';
+        touch($bin);
+
+        $job = $scheduler->php($script, $bin)->inForeground();
+
+        unlink($bin);
+
+        $this->assertEquals($bin . ' ' . $script, $job->compile());
+    }
+
+    public function testShouldUseSystemPhpBinIfCustomBinDoesNotExist()
+    {
+        $scheduler = new Scheduler();
+        $script = __DIR__ . '/../test_job.php';
+
+        // Create fake bin
+        $bin = '/my/custom/php/bin';
+
+        $job = $scheduler->php($script, $bin)->inForeground();
+
+        $this->assertNotEquals($bin . ' ' . $script, $job->compile());
+        $this->assertEquals(PHP_BINARY . ' ' . $script, $job->compile());
+    }
+
     /**
      * @expectedException InvalidArgumentException
      */
@@ -43,15 +74,15 @@ class SchedulerTest extends TestCase
         $scheduler->run();
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testShouldThrowExceptionIfScriptPathIsInvalid()
+    public function testShouldMarkJobAsFailedIfScriptPathIsInvalid()
     {
         $scheduler = new Scheduler();
         $scheduler->php('someInvalidPathToAScript');
 
         $scheduler->run();
+        $fail = $scheduler->getFailedJobs();
+        $this->assertCount(1, $fail);
+        $this->assertContainsOnlyInstancesOf(Job::class, $fail);
     }
 
     public function testShouldQueueAShellCommand()
