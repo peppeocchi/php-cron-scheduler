@@ -23,7 +23,7 @@ class Scheduler
     /**
      * Failed jobs.
      *
-     * @var array
+     * @var FailedJob[]
      */
     private $failedJobs = [];
 
@@ -256,7 +256,7 @@ class Scheduler
      */
     private function pushFailedJob(Job $job, Exception $e)
     {
-        $this->failedJobs[] = $job;
+        $this->failedJobs[] = new FailedJob($job, $e);
 
         $compiled = $job->compile();
 
@@ -273,7 +273,7 @@ class Scheduler
     /**
      * Get the failed jobs.
      *
-     * @return array
+     * @return FailedJob[]
      */
     public function getFailedJobs()
     {
