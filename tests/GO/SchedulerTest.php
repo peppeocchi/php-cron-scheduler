@@ -2,6 +2,7 @@
 
 use GO\Job;
 use DateTime;
+use GO\FailedJob;
 use GO\Scheduler;
 use PHPUnit\Framework\TestCase;
 
@@ -82,7 +83,7 @@ class SchedulerTest extends TestCase
         $scheduler->run();
         $fail = $scheduler->getFailedJobs();
         $this->assertCount(1, $fail);
-        $this->assertContainsOnlyInstancesOf(Job::class, $fail);
+        $this->assertContainsOnlyInstancesOf(FailedJob::class, $fail);
     }
 
     public function testShouldQueueAShellCommand()
@@ -152,8 +153,9 @@ class SchedulerTest extends TestCase
     {
         $scheduler = new Scheduler();
 
-        $scheduler->call(function () {
-            throw new \Exception('Something failed');
+        $exception = new \Exception('Something failed');
+        $scheduler->call(function () use ($exception) {
+            throw $exception;
         });
 
         $this->assertEquals(count($scheduler->getFailedJobs()), 0);
@@ -162,6 +164,10 @@ class SchedulerTest extends TestCase
 
         $this->assertEquals(count($scheduler->getExecutedJobs()), 0);
         $this->assertEquals(count($scheduler->getFailedJobs()), 1);
+        $failedJob = $scheduler->getFailedJobs()[0];
+        $this->assertInstanceOf(FailedJob::class, $failedJob);
+        $this->assertSame($exception, $failedJob->getException());
+        $this->assertInstanceOf(Job::class, $failedJob->getJob());
     }
 
     public function testShouldKeepExecutingJobsIfOneFails()
