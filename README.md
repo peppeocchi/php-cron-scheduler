@@ -408,6 +408,18 @@ The resons for this feature are described [here](https://github.com/peppeocchi/p
 $fakeRunTime = new DateTime('2017-09-13 00:00:00');
 $scheduler->run($fakeRunTime);
 ```
+### Job failures
+If some job fails, you can access list of failed jobs and reasons for failures.
 
+```php
+// get all failed jobs and select first
+$failedJob = $scheduler->getFailedJobs()[0];
+
+// exception that occurred during job
+$exception = $failedJob->getException();
+
+// job that failed
+$job = $failedJob->getJob();
+```
 ## License
 [The MIT License (MIT)](LICENSE)
