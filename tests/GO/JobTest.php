@@ -14,6 +14,9 @@ class JobTest extends TestCase
             return true;
         });
         $this->assertTrue(is_string($job2->getId()));
+
+        $job3 = new Job(['MyClass', 'myMethod']);
+        $this->assertTrue(is_string($job3->getId()));
     }
 
     public function testShouldGenerateIdFromSignature()
@@ -23,6 +26,9 @@ class JobTest extends TestCase
 
         $job2 = new Job('whoami');
         $this->assertNotEquals($job1->getId(), $job2->getId());
+
+        $job3 = new Job(['MyClass', 'myMethod']);
+        $this->assertNotEquals($job1->getId(), $job3->getId());
     }
 
     public function testShouldAllowCustomId()
@@ -31,6 +37,9 @@ class JobTest extends TestCase
 
         $this->assertNotEquals(md5('ls'), $job->getId());
         $this->assertEquals('aCustomId', $job->getId());
+
+        $job2 = new Job(['MyClass', 'myMethod'], null, 'myCustomId');
+        $this->assertEquals('myCustomId', $job2->getId());
     }
 
     public function testShouldKnowIfDue()
