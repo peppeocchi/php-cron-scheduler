@@ -144,6 +144,11 @@ class Job
     private $outputMode;
 
     /**
+     * @var bool
+     */
+    private $captureStdErr = false;
+
+    /**
      * Create a new Job instance.
      *
      * @param  string|callable  $command
@@ -301,6 +306,10 @@ class Job
 
         // Add the boilerplate to redirect the output to file/s
         if (count($this->outputTo) > 0) {
+            if ($this->captureStdErr) {
+                $compiled .= ' 2>&1';
+            }
+
             $compiled .= ' | tee ';
             $compiled .= $this->outputMode === 'a' ? '-a ' : '';
             foreach ($this->outputTo as $file) {
@@ -473,6 +482,19 @@ class Job
     {
         $this->outputTo = is_array($filename) ? $filename : [$filename];
         $this->outputMode = $append === false ? 'w' : 'a';
+
+        return $this;
+    }
+
+    /**
+     * Set the option for writing stderr to the output file
+     *
+     * @param bool $capture
+     * @return self
+     */
+    public function captureStandardError($capture = true)
+    {
+        $this->captureStdErr = $capture;
 
         return $this;
     }
