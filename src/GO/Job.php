@@ -487,7 +487,7 @@ class Job
     }
 
     /**
-     * Set the option for writing stderr to the output file
+     * Set the option for writing stderr to the output file.
      *
      * @param bool $capture
      * @return self
