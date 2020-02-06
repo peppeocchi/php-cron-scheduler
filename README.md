@@ -116,7 +116,41 @@ $scheduler->call(
         return $args['user'];
     },
     [
-        'user' => $user,
+        ['user' => $user],
+    ],
+    'myCustomIdentifier'
+);
+```
+
+All of the arguments you pass in the array will be injected to your function.
+For example
+
+```php
+$scheduler->call(
+    function ($firstName, $lastName) {
+        return implode(' ', [$firstName, $lastName]);
+    },
+    [
+        'John',
+        'last_name' => 'Doe', // The keys are being ignored
+    ],
+    'myCustomIdentifier'
+);
+```
+
+If you want to pass a key => value pair, please pass an array within the arguments array
+
+```php
+$scheduler->call(
+    function ($user, $role) {
+        return implode(' ', [$user['first_name'], $user['last_name']]) . " has role: '{$role}'";
+    },
+    [
+        [
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+        ],
+        'Admin'
     ],
     'myCustomIdentifier'
 );
