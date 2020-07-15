@@ -263,10 +263,19 @@ class Job
             $tempDir = $this->tempDir;
         }
 
-        $this->lockFile = implode('/', [
-            trim($tempDir),
-            trim($this->id) . '.lock',
-        ]);
+         if(file_exists('/dev/null')){
+             //linux systems
+             $this->lockFile = implode('/', [
+                 trim($tempDir),
+                 trim($this->id) . '.lock',
+             ]);
+         }else{
+             //windows systems need back slashes for file paths
+             $this->lockFile = implode('\\', [
+                 trim(str_replace('/', '\\', $tempDir)),
+                 trim($this->id) . '.lock',
+             ]);
+         }
 
         if ($whenOverlapping) {
             $this->whenOverlapping = $whenOverlapping;
@@ -303,8 +312,15 @@ class Job
 
         // Add the boilerplate to redirect the output to file/s
         if (count($this->outputTo) > 0) {
-            $compiled .= ' | tee ';
-            $compiled .= $this->outputMode === 'a' ? '-a ' : '';
+            if(file_exists('/dev/null')){
+                //linux systems
+                 $compiled .= ' | tee ';
+                 $compiled .= $this->outputMode === 'a' ? '-a ' : '';
+             }else{
+                //windows systems
+                 $compiled .= ' ';
+                 $compiled .= $this->outputMode === 'a' ? '>> ' : '> ';
+             }
             foreach ($this->outputTo as $file) {
                 $compiled .= $file . ' ';
             }
@@ -314,14 +330,26 @@ class Job
 
         // Add boilerplate to remove lockfile after execution
         if ($this->lockFile) {
-            $compiled .= '; rm ' . $this->lockFile;
+           if(file_exists('/dev/null')){
+                //linux systems
+                $compiled .= '; rm ' . $this->lockFile;
+            }else{
+                //windows systems
+                $compiled .= ' & del ' . $this->lockFile;
+            }
         }
 
         // Add boilerplate to run in background
         if ($this->canRunInBackground()) {
             // Parentheses are need execute the chain of commands in a subshell
             // that can then run in background
-            $compiled = '(' . $compiled . ') > /dev/null 2>&1 &';
+            if(file_exists('/dev/null')){
+                //linux systems
+                $compiled = '(' . $compiled . ') > /dev/null 2>&1 &';
+            }else{
+                //windows systems
+                $compiled = '(' . $compiled . ') > NUL 2>&1';
+            }
         }
 
         return trim($compiled);
