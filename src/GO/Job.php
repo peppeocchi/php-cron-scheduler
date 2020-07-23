@@ -319,8 +319,10 @@ class Job
 
         // Add the boilerplate to redirect the output to file/s
         if (count($this->outputTo) > 0) {
-            $compiled .= ' | tee ';
+            $compiled .= ' 2>&1 | tee ';
+            
             $compiled .= $this->outputMode === 'a' ? '-a ' : '';
+            
             foreach ($this->outputTo as $file) {
                 $compiled .= $file . ' ';
             }
