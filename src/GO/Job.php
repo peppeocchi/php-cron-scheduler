@@ -165,6 +165,8 @@ class Job
         } else {
             if (is_string($command)) {
                 $this->id = md5($command);
+            } elseif (is_array($command)) {
+                $this->id = md5(serialize($command));
             } else {
                 /* @var object $command */
                 $this->id = spl_object_hash($command);

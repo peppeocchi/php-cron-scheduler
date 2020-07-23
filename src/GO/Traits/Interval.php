@@ -39,11 +39,19 @@ trait Interval
     /**
      * Set the execution time to every minute.
      *
+     * @param int|string|null When set, specifies that the job will be run every $minute minutes
+     *
      * @return self
      */
-    public function everyMinute()
+    public function everyMinute($minute = null)
     {
-        return $this->at('* * * * *');
+        $minuteExpression = '*';
+        if ($minute !== null) {
+            $c = $this->validateCronSequence($minute);
+            $minuteExpression = '*/' . $c['minute'];
+        }
+
+        return $this->at($minuteExpression . ' * * * *');
     }
 
     /**
@@ -405,6 +413,6 @@ trait Interval
             );
         }
 
-        return $value;
+        return (int) $value;
     }
 }
