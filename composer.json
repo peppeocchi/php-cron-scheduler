@@ -1,5 +1,5 @@
 {
-    "name": "peppeocchi/php-cron-scheduler",
+    "name": "saschanos/php-cron-scheduler",
     "description": "PHP Cron Job Scheduler",
     "license": "MIT",
     "keywords": ["cron job", "scheduler"],
