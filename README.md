@@ -18,10 +18,12 @@ or add the package to your `composer.json`
 ```json
 {
     "require": {
-        "peppeocchi/php-cron-scheduler": "2.*"
+        "peppeocchi/php-cron-scheduler": "3.*"
     }
 }
 ```
+
+Scheduler V3 requires php >= 7.1, please use the [v2 branch](https://github.com/peppeocchi/php-cron-scheduler/tree/v2.x) for php versions < 7.1.
 
 ## How it works
 
@@ -63,7 +65,7 @@ $scheduler->php('path/to/my/script.php');
 The `php` method accepts 4 arguments:
 - The path to your php script
 - The PHP binary to use
-- Arguments to be passed to the script
+- Arguments to be passed to the script (**NOTE**: You need to have **register_argc_argv** enable in your php.ini for this to work ([ref](https://github.com/peppeocchi/php-cron-scheduler/issues/88)). Don't worry it's enabled by default, so unlessy you've intentionally disabled it or your host has it disabled by default, you can ignore it.)
 - Identifier
 ```php
 $scheduler->php(
@@ -114,7 +116,41 @@ $scheduler->call(
         return $args['user'];
     },
     [
-        'user' => $user,
+        ['user' => $user],
+    ],
+    'myCustomIdentifier'
+);
+```
+
+All of the arguments you pass in the array will be injected to your function.
+For example
+
+```php
+$scheduler->call(
+    function ($firstName, $lastName) {
+        return implode(' ', [$firstName, $lastName]);
+    },
+    [
+        'John',
+        'last_name' => 'Doe', // The keys are being ignored
+    ],
+    'myCustomIdentifier'
+);
+```
+
+If you want to pass a key => value pair, please pass an array within the arguments array
+
+```php
+$scheduler->call(
+    function ($user, $role) {
+        return implode(' ', [$user['first_name'], $user['last_name']]) . " has role: '{$role}'";
+    },
+    [
+        [
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+        ],
+        'Admin'
     ],
     'myCustomIdentifier'
 );
@@ -125,13 +161,14 @@ $scheduler->call(
 There are a few methods to help you set the execution time of your schedules.
 If you don't call any of this method, the job will run every minute (* * * * *).
 
-- `at` - This method accepts any expression supported by [mtdowling/cron-expression](https://github.com/mtdowling/cron-expression)
+- `at` - This method accepts any expression supported by [dragonmantank/cron-expression](https://github.com/dragonmantank/cron-expression)
     ```php
     $scheduler->php('script.php')->at('* * * * *');
     ```
-- `everyMinute` - Run every minute
+- `everyMinute` - Run every minute. You can optionally pass a `$minute` to specify the job runs every `$minute` minutes.
     ```php
     $scheduler->php('script.php')->everyMinute();
+    $scheduler->php('script.php')->everyMinute(5);
     ```
 - `hourly` - Run once per hour. You can optionally pass the `$minute` you want to run, by default it will run every hour at minute '00'.
     ```php
@@ -405,6 +442,18 @@ The resons for this feature are described [here](https://github.com/peppeocchi/p
 $fakeRunTime = new DateTime('2017-09-13 00:00:00');
 $scheduler->run($fakeRunTime);
 ```
+### Job failures
+If some job fails, you can access list of failed jobs and reasons for failures.
 
+```php
+// get all failed jobs and select first
+$failedJob = $scheduler->getFailedJobs()[0];
+
+// exception that occurred during job
+$exception = $failedJob->getException();
+
+// job that failed
+$job = $failedJob->getJob();
+```
 ## License
 [The MIT License (MIT)](LICENSE)
