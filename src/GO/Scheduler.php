@@ -309,4 +309,14 @@ class Scheduler
 
         return $this;
     }
+
+    public function work($interval = [0])
+    {
+        while (true) {
+            if (in_array((int) date('s'), $interval)) {
+                $this->run();
+                sleep(1);
+            }
+        }
+    }
 }
