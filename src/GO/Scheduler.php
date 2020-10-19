@@ -310,10 +310,15 @@ class Scheduler
         return $this;
     }
 
-    public function work($interval = [0])
+    /**
+     * Start a worker.
+     *
+     * @param  array  $seconds - When the scheduler should run
+     */
+    public function work(array $seconds = [0])
     {
         while (true) {
-            if (in_array((int) date('s'), $interval)) {
+            if (in_array((int) date('s'), $seconds)) {
                 $this->run();
                 sleep(1);
             }
