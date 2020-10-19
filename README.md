@@ -466,7 +466,7 @@ $scheduler->work();
 ```
 The above code starts a worker that will run your job/s every minute.
 This is meant to be a testing/debugging tool, but you're free to use it however you like.
-You can optionally pass an array of "second" of when you want the worker to run your jobs, for example by passing `[0, 30]`, the worker will run your jobs at second **0** and at second **30** of the minute.
+You can optionally pass an array of "seconds" of when you want the worker to run your jobs, for example by passing `[0, 30]`, the worker will run your jobs at second **0** and at second **30** of the minute.
 ```php
 $scheduler->work([0, 10, 25, 50, 55]);
 ```
@@ -496,7 +496,7 @@ $scheduler->work();
 ```
 Then in your command like run `php worker.php`. This will start a foreground process that you can kill by simply exiting the command.
 
-The worker is not meant to collect any data about your runs, and as already said it is meant to be a testing/debuggin tool.
+The worker is not meant to collect any data about your runs, and as already said it is meant to be a testing/debugging tool.
 
 ## License
 [The MIT License (MIT)](LICENSE)
