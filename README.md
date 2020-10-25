@@ -471,7 +471,7 @@ You can optionally pass an array of "seconds" of when you want the worker to run
 $scheduler->work([0, 10, 25, 50, 55]);
 ```
 
-It is highly advisable that you run your worker separately from your scheduler, although you can run the worker within your scheduler. The problem comes when your scheduler has one or more synchronous job, and the worker will have to wait for your job to completes before continuing the loop. For example
+It is highly advisable that you run your worker separately from your scheduler, although you can run the worker within your scheduler. The problem comes when your scheduler has one or more synchronous job, and the worker will have to wait for your job to complete before continuing the loop. For example
 ```php
 $scheduler->call(function () {
     sleep(120);
@@ -479,7 +479,7 @@ $scheduler->call(function () {
 $scheduler->work();
 ```
 The above will skip more than one execution, so it won't run anymore every minute but it will run probably every 2 or 3 minutes.
-Instean the preferred approach would be to separate the worker from your scheduler.
+Instead the preferred approach would be to separate the worker from your scheduler.
 ```php
 // File scheduler.php
 $scheduler = new Scheduler();
@@ -494,7 +494,7 @@ $scheduler = new Scheduler();
 $scheduler->php('scheduler.php');
 $scheduler->work();
 ```
-Then in your command like run `php worker.php`. This will start a foreground process that you can kill by simply exiting the command.
+Then in your command line run `php worker.php`. This will start a foreground process that you can kill by simply exiting the command.
 
 The worker is not meant to collect any data about your runs, and as already said it is meant to be a testing/debugging tool.
 
