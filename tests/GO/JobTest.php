@@ -141,11 +141,10 @@ class JobTest extends TestCase
         $this->assertInstanceOf(Job::class, $job->email(['test@mail.com', 'other@mail.com']));
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
     public function testShouldFailIfEmailInputIsNotStringOrArray()
     {
+        $this->expectException(\InvalidArgumentException::class);
+
         $job = new Job('ls');
 
         $job->email(1);
@@ -159,11 +158,10 @@ class JobTest extends TestCase
         ]));
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
     public function testShouldFailIfEmailConfigurationIsNotArray()
     {
+        $this->expectException(\InvalidArgumentException::class);
+
         $job = new Job('ls');
         $job->configure([
             'email' => 123,
