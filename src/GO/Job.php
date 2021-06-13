@@ -214,7 +214,7 @@ class Job
     public function isDue(DateTime $date = null)
     {
         // The execution time is being defaulted if not defined
-        if (!$this->executionTime) {
+        if (! $this->executionTime) {
             $this->at('* * * * *');
         }
 
@@ -277,7 +277,7 @@ class Job
      */
     public function onlyOne($tempDir = null, callable $whenOverlapping = null)
     {
-        if ($tempDir === null || !is_dir($tempDir)) {
+        if ($tempDir === null || ! is_dir($tempDir)) {
             $tempDir = $this->tempDir;
         }
 
@@ -356,7 +356,7 @@ class Job
     public function configure(array $config = [])
     {
         if (isset($config['email'])) {
-            if (!is_array($config['email'])) {
+            if (! is_array($config['email'])) {
                 throw new InvalidArgumentException('Email configuration should be an array.');
             }
             $this->emailConfig = $config['email'];
@@ -430,7 +430,7 @@ class Job
     private function createLockFile($content = null)
     {
         if ($this->lockFile) {
-            if ($content === null || !is_string($content)) {
+            if ($content === null || ! is_string($content)) {
                 $content = $this->getId();
             }
 
@@ -454,8 +454,8 @@ class Job
      * Execute a callable job.
      *
      * @param callable $fn
-     * @return string
      * @throws Exception
+     * @return string
      */
     private function exec(callable $fn)
     {
@@ -520,7 +520,7 @@ class Job
      */
     public function email($email)
     {
-        if (!is_string($email) && !is_array($email)) {
+        if (! is_string($email) && ! is_array($email)) {
             throw new InvalidArgumentException('The email can be only string or array');
         }
 
@@ -555,7 +555,7 @@ class Job
      */
     private function emailOutput()
     {
-        if (!count($this->outputTo) || !count($this->emailTo)) {
+        if (! count($this->outputTo) || ! count($this->emailTo)) {
             return false;
         }
 
