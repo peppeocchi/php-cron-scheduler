@@ -17,12 +17,12 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "php": "^7.1",
-        "dragonmantank/cron-expression": "^2.3"
+        "php": "^7.3 || ^8.0",
+        "dragonmantank/cron-expression": "^3.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~5.7",
-        "satooshi/php-coveralls": "^1.0",
+        "phpunit/phpunit": "~9.5",
+        "php-coveralls/php-coveralls": "^2.4",
         "swiftmailer/swiftmailer": "~5.4 || ^6.0"
     },
     "suggest": {

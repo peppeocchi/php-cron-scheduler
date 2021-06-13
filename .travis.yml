@@ -1,7 +1,8 @@
 language: php
 php:
-  - '7.1'
-  - '7.2'
+  - '7.3'
+  - '7.4'
+  - '8.0'
   - hhvm
 
 matrix:
@@ -16,7 +17,7 @@ install:
   - php composer.phar install --no-interaction
 
 script:
-  - php vendor/bin/phpunit -c phpunit.xml
+  - XDEBUG_MODE=coverage php vendor/bin/phpunit -c phpunit.xml --coverage-clover clover.xml
 
 after_success:
-  - travis_retry php vendor/bin/coveralls -v
+  - travis_retry php vendor/bin/php-coveralls -v

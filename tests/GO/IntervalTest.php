@@ -32,11 +32,10 @@ class IntervalTest extends TestCase
         $this->assertTrue($job->hourly(19)->isDue(\DateTime::createFromFormat('H:i', '11:19')));
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
     public function testShouldThrowExceptionWithInvalidHourlyMinuteInput()
     {
+        $this->expectException(\InvalidArgumentException::class);
+
         $job = new Job('ls');
         $job->hourly('abc');
     }
@@ -63,20 +62,18 @@ class IntervalTest extends TestCase
         $this->assertTrue($job->daily('19:53')->isDue(\DateTime::createFromFormat('H:i', '19:53')));
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
     public function testShouldThrowExceptionWithInvalidDailyHourInput()
     {
+        $this->expectException(\InvalidArgumentException::class);
+
         $job = new Job('ls');
         $job->daily('abc');
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
     public function testShouldThrowExceptionWithInvalidDailyMinuteInput()
     {
+        $this->expectException(\InvalidArgumentException::class);
+
         $job = new Job('ls');
         $job->daily(2, 'abc');
     }
