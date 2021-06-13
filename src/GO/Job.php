@@ -22,8 +22,7 @@ class Job
      * @var string
      */
     private $pid = null;
-
-
+    
     /**
      * Command to execute.
      *
