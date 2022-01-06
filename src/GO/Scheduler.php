@@ -126,9 +126,9 @@ class Scheduler
         $bin = $bin !== null && is_string($bin) && file_exists($bin) ?
             $bin : (PHP_BINARY === '' ? '/usr/bin/php' : PHP_BINARY);
 
-				if (PHP_OS_FAMILY == 'Windows' && stripos($bin, ' ') !== false) {
-					$bin = '"{$bin}"';
-				}
+        if (PHP_OS_FAMILY == 'Windows' && stripos($bin, ' ') !== false) {
+            $bin = '"{$bin}"';
+        }
 
         $job = new Job($bin . ' ' . $script, $args, $id);
 
