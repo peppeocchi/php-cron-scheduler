@@ -2,7 +2,6 @@ on:
   push:
     branches:
       - 'master'
-      - 'php8.1'
   pull_request:
     branches:
       - 'master'
