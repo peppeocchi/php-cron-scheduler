@@ -22,7 +22,7 @@ trait Interval
     /**
      * Run the Job at a specific date.
      *
-     * @param  string/DateTime  $date
+     * @param  string|DateTime  $date
      * @return self
      */
     public function date($date)
