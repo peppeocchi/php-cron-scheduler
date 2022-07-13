@@ -319,9 +319,14 @@ class Job
 
         // Add boilerplate to run in background
         if ($this->canRunInBackground()) {
-            // Parentheses are need execute the chain of commands in a subshell
-            // that can then run in background
-            $compiled = '(' . $compiled . ') > /dev/null 2>&1 &';
+            if (PHP_OS_FAMILY == 'Windows'){
+                $compiled .= '> NUL 2> NUL';
+            }
+            else {
+                // Parentheses are need execute the chain of commands in a subshell
+                // that can then run in background
+                $compiled = '(' . $compiled . ') > /dev/null 2>&1 &';
+            }
         }
 
         return trim($compiled);
