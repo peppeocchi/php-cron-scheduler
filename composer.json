@@ -1,8 +1,8 @@
 {
-    "name": "peppeocchi/php-cron-scheduler",
+    "name": "adamz01h/php-cron-scheduler",
     "description": "PHP Cron Job Scheduler",
     "license": "MIT",
-    "keywords": ["cron job", "scheduler"],
+    "keywords": ["cron job", "scheduler", "windows"],
     "authors": [
         {
             "name": "Giuseppe Occhipinti",
@@ -13,6 +13,10 @@
             "email": "carsten@carstenwindler.de",
             "homepage": "http://carstenwindler.de",
             "role": "Contributor"
+        },
+        {
+           "name": "adamz01h",
+           "role": "Contributor"
         }
     ],
     "minimum-stability": "dev",
