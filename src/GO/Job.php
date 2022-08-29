@@ -23,7 +23,8 @@ class Job
      */
     private $pid = null;
 
-    /**
+
+  /**
      * Command to execute.
      *
      * @var mixed
@@ -153,9 +154,9 @@ class Job
     /**
      * Create a new Job instance.
      *
-     * @param string|callable $command
-     * @param array $args
-     * @param string $id
+     * @param  string|callable  $command
+     * @param  array            $args
+     * @param  string           $id
      */
     public function __construct($command, $args = [], $id = null)
     {
@@ -188,7 +189,7 @@ class Job
      */
     public function getPid()
     {
-        return $this->pid;
+      return $this->pid;
     }
 
     /**
@@ -207,7 +208,7 @@ class Job
      * the job is due. Defaults to job creation time.
      * It also defaults the execution time if not previously defined.
      *
-     * @param DateTime $date
+     * @param  DateTime  $date
      * @return bool
      */
     public function isDue(DateTime $date = null)
@@ -234,8 +235,8 @@ class Job
     public function isOverlapping()
     {
         return $this->lockFile &&
-            file_exists($this->lockFile) &&
-            call_user_func($this->whenOverlapping, filemtime($this->lockFile)) === false;
+               file_exists($this->lockFile) &&
+               call_user_func($this->whenOverlapping, filemtime($this->lockFile)) === false;
     }
 
     /**
@@ -270,8 +271,8 @@ class Job
      * being executed if the previous is still running.
      * The job id is used as a filename for the lock file.
      *
-     * @param string $tempDir The directory path for the lock files
-     * @param callable $whenOverlapping A callback to ignore job overlapping
+     * @param  string    $tempDir          The directory path for the lock files
+     * @param  callable  $whenOverlapping  A callback to ignore job overlapping
      * @return self
      */
     public function onlyOne($tempDir = null, callable $whenOverlapping = null)
@@ -349,7 +350,7 @@ class Job
     /**
      * Configure the job.
      *
-     * @param array $config
+     * @param  array  $config
      * @return self
      */
     public function configure(array $config = [])
@@ -372,7 +373,7 @@ class Job
     /**
      * Truth test to define if the job should run if due.
      *
-     * @param callable $fn
+     * @param  callable  $fn
      * @return self
      */
     public function when(callable $fn)
@@ -423,7 +424,7 @@ class Job
     /**
      * Create the job lock file.
      *
-     * @param mixed $content
+     * @param  mixed  $content
      * @return void
      */
     private function createLockFile($content = null)
@@ -452,7 +453,7 @@ class Job
     /**
      * Execute a callable job.
      *
-     * @param callable $fn
+     * @param  callable  $fn
      * @throws Exception
      * @return string
      */
@@ -487,8 +488,8 @@ class Job
     /**
      * Set the file/s where to write the output of the job.
      *
-     * @param string|array $filename
-     * @param bool $append
+     * @param  string|array  $filename
+     * @param  bool          $append
      * @return self
      */
     public function output($filename, $append = false)
@@ -514,7 +515,7 @@ class Job
      * The Job should be set to write output to a file
      * for this to work.
      *
-     * @param string|array $email
+     * @param  string|array  $email
      * @return self
      */
     public function email($email)
@@ -592,8 +593,8 @@ class Job
      * second parameter. The job will run in background if it
      * meets all the other criteria.
      *
-     * @param callable $fn
-     * @param bool $runInBackground
+     * @param  callable  $fn
+     * @param  bool      $runInBackground
      * @return self
      */
     public function then(callable $fn, $runInBackground = false)
