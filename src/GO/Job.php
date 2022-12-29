@@ -179,6 +179,12 @@ class Job
      *
      * @return string
      */
+
+    public function getPid()
+    {
+      return $this->pid;
+    }
+
     public function getId()
     {
         return $this->id;
@@ -214,11 +220,35 @@ class Job
      *
      * @return bool
      */
-    public function isOverlapping()
+    public function isRunning()
     {
-        return $this->lockFile &&
-               file_exists($this->lockFile) &&
-               call_user_func($this->whenOverlapping, filemtime($this->lockFile)) === false;
+        return $this->pidFile &&
+               file_exists($this->pidFile) &&
+               $this->checkPID() === true;
+        //var_dump($this->checkPID());
+        //return true;
+    }
+
+     /**
+     * Check if the Job is overlapping.
+     *
+     * @return bool
+     */
+    public function checkPID()
+    {
+
+         $pid = file_get_contents($this->pidFile, true);
+         $out = false;
+         if(file_exists("/proc/$pid/cmdline")){
+           $contents = file_get_contents("/proc/$pid/cmdline", true);
+           $command_array = explode('/', $this->command);
+           $script = array_pop($command_array);
+           if(strpos($contents, $script)){
+             $out = true;
+             //is running and matchs the current process
+           }
+       }
+        return $out;
     }
 
     /**
@@ -264,18 +294,20 @@ class Job
         }
 
          if(file_exists('/dev/null')){
-             //linux systems
-             $this->lockFile = implode('/', [
+
+             $this->pidFile = implode('/', [
                  trim($tempDir),
-                 trim($this->id) . '.lock',
+                 trim($this->id) . '.pid',
              ]);
+
          }else{
-             //windows systems need back slashes for file paths
-             $this->lockFile = implode('\\', [
+
+             $this->pidFile = implode('\\', [
                  trim(str_replace('/', '\\', $tempDir)),
-                 trim($this->id) . '.lock',
+                 trim($this->id) . '.pid',
              ]);
          }
+
 
         if ($whenOverlapping) {
             $this->whenOverlapping = $whenOverlapping;
@@ -329,13 +361,13 @@ class Job
         }
 
         // Add boilerplate to remove lockfile after execution
-        if ($this->lockFile) {
+        if ($this->pidFile) {
            if(file_exists('/dev/null')){
                 //linux systems
-                $compiled .= '; rm ' . $this->lockFile;
+                $compiled .= '; rm ' . $this->pidFile;
             }else{
                 //windows systems
-                $compiled .= ' & del ' . $this->lockFile;
+                $compiled .= ' & del ' . $this->pidFile;
             }
         }
 
@@ -345,7 +377,7 @@ class Job
             // that can then run in background
             if(file_exists('/dev/null')){
                 //linux systems
-                $compiled = '(' . $compiled . ') > /dev/null 2>&1 &';
+                $compiled = '(' . $compiled . ') > /dev/null 2>&1 & echo $!';
             }else{
                 //windows systems
                 $compiled = '(' . $compiled . ') > NUL 2>&1';
@@ -403,15 +435,12 @@ class Job
             return false;
         }
 
-        // If overlapping, don't run
-        if ($this->isOverlapping()) {
+         // If isRunning, don't run
+        if ($this->isRunning()) {
             return false;
         }
 
         $compiled = $this->compile();
-
-        // Write lock file if necessary
-        $this->createLockFile();
 
         if (is_callable($this->before)) {
             call_user_func($this->before);
@@ -421,6 +450,8 @@ class Job
             $this->output = $this->exec($compiled);
         } else {
             exec($compiled, $this->output, $this->returnCode);
+            $this->pid = intval($this->output[0])+1;
+            $this->createPIDFile();
         }
 
         $this->finalise();
@@ -428,20 +459,20 @@ class Job
         return true;
     }
 
-    /**
-     * Create the job lock file.
+     /**
+     * Create the job pid file.
      *
      * @param  mixed  $content
      * @return void
      */
-    private function createLockFile($content = null)
+    private function createPIDFile($content = null)
     {
-        if ($this->lockFile) {
+        if ($this->pidFile) {
             if ($content === null || ! is_string($content)) {
-                $content = $this->getId();
+                $content = $this->getPid();
             }
 
-            file_put_contents($this->lockFile, $content);
+            file_put_contents($this->pidFile, $content);
         }
     }
 
@@ -450,10 +481,10 @@ class Job
      *
      * @return void
      */
-    private function removeLockFile()
+    private function removePIDFile()
     {
-        if ($this->lockFile && file_exists($this->lockFile)) {
-            unlink($this->lockFile);
+        if ($this->pidFile && file_exists($this->pidFile)) {
+            unlink($this->pidFile);
         }
     }
 
@@ -487,7 +518,7 @@ class Job
             }
         }
 
-        $this->removeLockFile();
+        $this->removePIDFile();
 
         return $outputBuffer . (is_string($returnData) ? $returnData : '');
     }
