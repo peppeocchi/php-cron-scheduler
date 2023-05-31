@@ -262,9 +262,9 @@ class Scheduler
 
         // If callable, log the string Closure
         if (is_callable($compiled)) {
-			$reflectionClosure = new \ReflectionFunction($compiled);
+	    $reflectionClosure = new \ReflectionFunction($compiled);
 
-			$compiled = 'Closure ' . $reflectionClosure->getClosureScopeClass()->getName();
+	    $compiled = 'Closure ' . $reflectionClosure->getClosureScopeClass()->getName();
         }
 
         $this->addSchedulerVerboseOutput("{$e->getMessage()}: {$compiled}");
