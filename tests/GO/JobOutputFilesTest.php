@@ -198,4 +198,47 @@ class JobOutputFilesTest extends TestCase
 
         unlink($outputFile);
     }
+
+    public function testShouldWriteStdErrToFile()
+    {
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../error_job.php';
+        $job = new Job($command);
+        $outputFile = __DIR__ . '/../tmp/output.log';
+
+        @unlink($outputFile);
+
+        // Test fist that the file doesn't exist yet
+        $this->assertFalse(file_exists($outputFile));
+        $job->captureStandardError();
+        $job->output($outputFile)->run();
+
+        sleep(2);
+        $this->assertTrue(file_exists($outputFile));
+
+        // Content should be the error for calling an undefined function
+        $this->assertStringStartsWith('PHP Fatal error:', file_get_contents($outputFile));
+
+        unlink($outputFile);
+    }
+
+    public function testShouldNotWriteStdErrToFile()
+    {
+        $command = PHP_BINARY . ' ' . __DIR__ . '/../error_job.php';
+        $job = new Job($command);
+        $outputFile = __DIR__ . '/../tmp/output.log';
+
+        @unlink($outputFile);
+
+        // Test fist that the file doesn't exist yet
+        $this->assertFalse(file_exists($outputFile));
+        $job->output($outputFile)->run();
+
+        sleep(2);
+        $this->assertTrue(file_exists($outputFile));
+
+        // Content should be ''
+        $this->assertEquals('', file_get_contents($outputFile));
+
+        unlink($outputFile);
+    }
 }
