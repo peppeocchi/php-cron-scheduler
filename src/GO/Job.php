@@ -24,7 +24,7 @@ class Job
     private $pid = null;
 
 
-  /**
+    /**
      * Command to execute.
      *
      * @var mixed
@@ -181,7 +181,7 @@ class Job
         $this->command = $command;
         $this->args = $args;
     }
-  
+
     /**
      * Get the PID.
      *
@@ -189,7 +189,7 @@ class Job
      */
     public function getPid()
     {
-      return $this->pid;
+        return $this->pid;
     }
 
     /**
