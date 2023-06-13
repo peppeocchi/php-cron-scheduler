@@ -15,15 +15,15 @@ class Job
      * @var string
      */
     private $id;
-
+  
     /**
      * PID.
      *
      * @var string
      */
     private $pid = null;
-
-
+    
+  
   /**
      * Command to execute.
      *
@@ -181,7 +181,7 @@ class Job
         $this->command = $command;
         $this->args = $args;
     }
-
+  
     /**
      * Get the PID.
      *
@@ -322,9 +322,9 @@ class Job
         // Add the boilerplate to redirect the output to file/s
         if (count($this->outputTo) > 0) {
             $compiled .= ' 2>&1 | tee ';
-
+            
             $compiled .= $this->outputMode === 'a' ? '-a ' : '';
-
+            
             foreach ($this->outputTo as $file) {
                 $compiled .= $file . ' ';
             }
