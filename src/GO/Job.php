@@ -17,6 +17,13 @@ class Job
     private $id;
 
     /**
+     * PID.
+     *
+     * @var string
+     */
+    private $pid = null;
+
+    /**
      * Command to execute.
      *
      * @var mixed
@@ -175,6 +182,16 @@ class Job
     }
 
     /**
+     * Get the PID.
+     *
+     * @return string
+     */
+    public function getPid()
+    {
+        return $this->pid;
+    }
+
+    /**
      * Get the Job id.
      *
      * @return string
@@ -303,8 +320,10 @@ class Job
 
         // Add the boilerplate to redirect the output to file/s
         if (count($this->outputTo) > 0) {
-            $compiled .= ' | tee ';
+            $compiled .= ' 2>&1 | tee ';
+
             $compiled .= $this->outputMode === 'a' ? '-a ' : '';
+
             foreach ($this->outputTo as $file) {
                 $compiled .= $file . ' ';
             }
@@ -321,7 +340,7 @@ class Job
         if ($this->canRunInBackground()) {
             // Parentheses are need execute the chain of commands in a subshell
             // that can then run in background
-            $compiled = '(' . $compiled . ') > /dev/null 2>&1 &';
+            $compiled = '(' . $compiled . ') > /dev/null 2>&1 & echo $!';
         }
 
         return trim($compiled);
@@ -393,6 +412,7 @@ class Job
             $this->output = $this->exec($compiled);
         } else {
             exec($compiled, $this->output, $this->returnCode);
+            $this->pid = intval($this->output[0]);
         }
 
         $this->finalise();
