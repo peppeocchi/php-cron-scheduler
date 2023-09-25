@@ -1,8 +1,8 @@
 <?php namespace GO;
 
 use DateTime;
-use InvalidArgumentException;
 use Throwable;
+use InvalidArgumentException;
 
 class Job
 {
