@@ -1,10 +1,82 @@
-<?php namespace GO\Job\Tests;
+<?php
+
+namespace GO\Job\Tests;
 
 use GO\Job;
 use PHPUnit\Framework\TestCase;
 
 class JobTest extends TestCase
 {
+    /**
+     * @var \Redis
+     */
+    protected $redis;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->redis = new Redis();
+        $this->redis->connect('127.0.0.1', 6379);
+        // $this->redis->select(15); // Use a separate database for testing if needed
+    }
+
+    protected function tearDown(): void
+    {
+        // Clean up Redis
+        $this->redis->flushDB(); // Be careful with this in a shared database
+
+        parent::tearDown();
+    }
+
+    public function testShouldAcquireAndReleaseRedisLock()
+    {
+        $jobId = 'test_job_redis_lock';
+        $lockKey = 'cron_lock:' . $jobId;
+
+        $job = new Job('echo "Hello World"', [], $jobId, $this->redis, 'cron_lock:');
+        $job->onlyOne();
+
+        // Run the job to acquire the lock
+        $job->run();
+
+        // Assert the lock is acquired
+        $this->assertEquals(1, $this->redis->exists($lockKey));
+
+        // Assuming the job has some mechanism or delay to ensure the lock is held for a bit
+        sleep(1);
+
+        // Assert the lock is released after the job runs
+        $this->assertEquals(0, $this->redis->exists($lockKey));
+    }
+
+    public function testShouldPreventOverlappingWithRedis()
+    {
+        $jobId = 'test_overlap_redis';
+        $lockKey = 'cron_lock:' . $jobId;
+
+        $job1 = new Job('sleep 5', [], $jobId, $this->redis, 'cron_lock:');
+        $job2 = new Job('echo "Second Job"', [], $jobId, $this->redis, 'cron_lock:');
+
+        $job1->onlyOne();
+        $job2->onlyOne();
+
+        // Run the first job to acquire the lock
+        $job1->run();
+
+        // Try to run the second job which should not execute due to the lock
+        $startTime = microtime(true);
+        $job2->run();
+        $endTime = microtime(true);
+
+        // Check if job2 execution was prevented (almost immediate return)
+        $this->assertLessThan(1, $endTime - $startTime);
+
+        // Assert the lock is still present after trying to run the second job
+        $this->assertEquals(1, $this->redis->exists($lockKey));
+    }
+
+
     public function testShouldAlwaysGenerateAnId()
     {
         $job1 = new Job('ls');

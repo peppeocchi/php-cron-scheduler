@@ -1,10 +1,10 @@
 on:
   push:
     branches:
-      - 'master'
+      - "master"
   pull_request:
     branches:
-      - 'master'
+      - "master"
 
 jobs:
   run:
@@ -12,20 +12,31 @@ jobs:
     strategy:
       matrix:
         operating-system: [ubuntu-latest]
-        php-versions: ['7.3', '7.4', '8.0', '8.1']
+        php-versions: ["7.3", "7.4", "8.0", "8.1"]
     name: PHP ${{ matrix.php-versions }} Test on ${{ matrix.operating-system }}
+    # Add Redis service
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: --entrypoint redis-server
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Install PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php-versions }}
-    - name: Check PHP Version
-      run: php -v
-    - name: Validate composer.json and composer.lock
-      run: composer validate
-    - name: Install composer dependencies
-      run: composer install --prefer-dist --no-progress --no-suggest
-    - name: Run tests
-      run: XDEBUG_MODE=coverage php vendor/bin/phpunit -c phpunit.xml --coverage-clover clover.xml
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+      - name: Check PHP Version
+        run: php -v
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+      - name: Install composer dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+      # Before running tests, ensure Redis is up and can be connected to
+      - name: Check Redis connection
+        run: redis-cli ping
+      - name: Run tests
+        run: XDEBUG_MODE=coverage php vendor/bin/phpunit -c phpunit.xml --coverage-clover clover.xml
