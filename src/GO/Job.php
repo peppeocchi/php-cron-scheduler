@@ -332,8 +332,6 @@ class Job
         if ($this->redisClient) {
             $lockKey = $this->redisPrefix . $this->id;
             $this->redisClient->del([$lockKey]);
-        } else {
-            $this->removeLockFile();
         }
     }
 
