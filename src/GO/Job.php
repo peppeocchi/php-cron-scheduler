@@ -322,10 +322,10 @@ class Job
     }
 
     /**
-     * Set the job schedule time.
+     * Releases the lock for the current job.
+     * This involves deleting the Redis key used for locking or removing the lock file.
      *
-     * @param  string  $expression
-     * @return self
+     * @return void
      */
     private function releaseLock()
     {
@@ -518,6 +518,11 @@ class Job
         }
 
         $this->removeLockFile();
+
+        // Release the lock in case of Redis
+        if($this->redisClient) {
+            $this->releaseLock();
+        }
 
         return $outputBuffer . (is_string($returnData) ? $returnData : '');
     }
