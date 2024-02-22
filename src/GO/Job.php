@@ -169,7 +169,7 @@ class Job
      * @param  Redis            $redisClient
      * @param  string           $redisPrefix
      */
-    public function __construct($command, $args = [], $id = null, $redisClient = null, $redisPrefix = 'cron_lock:')
+    public function __construct($command, $args = [], $id = null)
     {
         if (is_string($id)) {
             $this->id = $id;
@@ -191,12 +191,6 @@ class Job
 
         $this->command = $command;
         $this->args = $args;
-
-        // Set the Redis client and prefix
-        if ($redisClient) {
-            $this->redisClient = $redisClient;
-            $this->redisPrefix = $redisPrefix;
-        }
     }
 
     /**
@@ -403,6 +397,12 @@ class Job
         // Check if config has defined a tempDir
         if (isset($config['tempDir']) && is_dir($config['tempDir'])) {
             $this->tempDir = $config['tempDir'];
+        }
+
+        // Set the Redis client and prefix
+        if (isset($config['redisClient']) && $config['redisClient'] instanceof Redis) {
+            $this->redisClient = $config['redisClient'];
+            $this->redisPrefix = $config['redisPrefix'] ?? $this->redisPrefix;
         }
 
         return $this;
