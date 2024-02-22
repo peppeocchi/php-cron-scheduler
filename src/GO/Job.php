@@ -149,7 +149,7 @@ class Job
     /**
      * Redis client.
      *
-     * @var \Redis
+     * @var Redis
      */
     private $redisClient = null;
 
@@ -242,6 +242,7 @@ class Job
     {
         if ($this->redisClient) {
             $lockKey = $this->redisPrefix . $this->id;
+
             return $this->redisClient->exists($lockKey);
         }
 
@@ -292,7 +293,7 @@ class Job
             $this->lockAcquired = $this->redisClient->set($lockKey, time(), ['nx', 'ex' => 3600]);
         } else {
             // Fallback to file lock mechanism
-            if ($tempDir === null || !is_dir($tempDir)) {
+            if ($tempDir === null || ! is_dir($tempDir)) {
                 $tempDir = $this->tempDir;
             }
 
@@ -301,14 +302,14 @@ class Job
                 trim($this->id) . '.lock',
             ]);
 
-            if (!file_exists($this->lockFile)) {
+            if (! file_exists($this->lockFile)) {
                 // Attempt to create the lock file
                 touch($this->lockFile);
                 $this->lockAcquired = true;
             }
         }
 
-        if (!$this->lockAcquired && $whenOverlapping) {
+        if (! $this->lockAcquired && $whenOverlapping) {
             call_user_func($whenOverlapping);
             return $this; // Return early if overlap is detected
         }
@@ -406,7 +407,6 @@ class Job
 
         // Set the Redis client and prefix
         if (isset($config['redisClient']) && $config['redisClient'] instanceof Redis) {
-
             $this->redisClient = $config['redisClient'];
             $this->redisPrefix = $config['redisPrefix'] ?? $this->redisPrefix;
         }
@@ -456,7 +456,7 @@ class Job
             $this->finalise();
         } catch (Exception $e) {
             // Handle any exceptions that occurred during job execution
-            throw new Exception("An error occurred during job execution: " . $e->getMessage());
+            throw new Exception('An error occurred during job execution: ' . $e->getMessage());
         } finally {
             // Always release the lock, regardless of job success or failure
             $this->releaseLock();
@@ -464,7 +464,6 @@ class Job
 
         return true; // Indicate the job was executed (attempted)
     }
-
 
     /**
      * Create the job lock file.
