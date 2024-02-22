@@ -290,8 +290,6 @@ class Job
 
             if ($lockAcquired) {
                 $this->redisClient->expire($lockKey, 3600); // Expire the lock after 1 hour
-            } else {
-                return $this;
             }
         } else {
             // Fallback to file lock mechanism
