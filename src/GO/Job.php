@@ -518,7 +518,7 @@ class Job
         $this->removeLockFile();
 
         // Release the lock in case of Redis
-        if($this->redisClient) {
+        if ($this->redisClient) {
             $this->releaseLock();
         }
 
