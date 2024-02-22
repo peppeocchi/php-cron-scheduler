@@ -1,5 +1,4 @@
-PHP Cron Scheduler
-==
+# PHP Cron Scheduler
 
 [![Latest Stable Version](https://poser.pugx.org/peppeocchi/php-cron-scheduler/v/stable)](https://packagist.org/packages/peppeocchi/php-cron-scheduler) [![License](https://poser.pugx.org/peppeocchi/php-cron-scheduler/license)](https://packagist.org/packages/peppeocchi/php-cron-scheduler) [![Build Status](https://travis-ci.org/peppeocchi/php-cron-scheduler.svg)](https://travis-ci.org/peppeocchi/php-cron-scheduler) [![Coverage Status](https://coveralls.io/repos/github/peppeocchi/php-cron-scheduler/badge.svg?branch=master)](https://coveralls.io/github/peppeocchi/php-cron-scheduler?branch=master) [![StyleCI](https://styleci.io/repos/38302733/shield)](https://styleci.io/repos/38302733) [![Total Downloads](https://poser.pugx.org/peppeocchi/php-cron-scheduler/downloads)](https://packagist.org/packages/peppeocchi/php-cron-scheduler)
 
@@ -7,6 +6,7 @@ This is a framework agnostic cron jobs scheduler that can be easily integrated w
 The idea was originally inspired by the [Laravel Task Scheduling](http://laravel.com/docs/5.1/scheduling).
 
 ## Installing via Composer
+
 The recommended way is to install the php-cron-scheduler is through [Composer](https://getcomposer.org/).
 Please refer to [Getting Started](https://getcomposer.org/doc/00-intro.md) on how to download and install Composer.
 
@@ -15,11 +15,12 @@ After you have downloaded/installed Composer, run
 `php composer.phar require peppeocchi/php-cron-scheduler`
 
 or add the package to your `composer.json`
+
 ```json
 {
-    "require": {
-        "peppeocchi/php-cron-scheduler": "4.*"
-    }
+  "require": {
+    "peppeocchi/php-cron-scheduler": "4.*"
+  }
 }
 ```
 
@@ -28,6 +29,7 @@ Scheduler V4 requires php >= 7.3, please use the [v3 branch](https://github.com/
 ## How it works
 
 Create a `scheduler.php` file in the root your project with the following content.
+
 ```php
 <?php require_once __DIR__.'/vendor/autoload.php';
 
@@ -44,9 +46,9 @@ $scheduler->run();
 
 Then add a new entry to your crontab to run `scheduler.php` every minute.
 
-````
+```
 * * * * * path/to/phpbin path/to/scheduler.php 1>> /dev/null 2>&1
-````
+```
 
 That's it! Your scheduler is up and running, now you can add your jobs without worring anymore about the crontab.
 
@@ -62,11 +64,14 @@ You can force a command to run in foreground by calling the `inForeground()` met
 ```php
 $scheduler->php('path/to/my/script.php');
 ```
+
 The `php` method accepts 4 arguments:
+
 - The path to your php script
 - The PHP binary to use
 - Arguments to be passed to the script (**NOTE**: You need to have **register_argc_argv** enable in your php.ini for this to work ([ref](https://github.com/peppeocchi/php-cron-scheduler/issues/88)). Don't worry it's enabled by default, so unless you've intentionally disabled it or your host has it disabled by default, you can ignore it.)
 - Identifier
+
 ```php
 $scheduler->php(
     'path/to/my/script.php', // The script to execute
@@ -84,10 +89,13 @@ $scheduler->php(
 ```php
 $scheduler->raw('ps aux | grep httpd');
 ```
+
 The `raw` method accepts 3 arguments:
+
 - Your command
 - Arguments to be passed to the command
 - Identifier
+
 ```php
 $scheduler->raw(
     'mycommand | myOtherCommand',
@@ -106,10 +114,13 @@ $scheduler->call(function () {
     return true;
 });
 ```
+
 The `call` method accepts 3 arguments:
+
 - Your function
 - Arguments to be passed to the function
 - Identifier
+
 ```php
 $scheduler->call(
     function ($args) {
@@ -159,30 +170,31 @@ $scheduler->call(
 ### Schedules execution time
 
 There are a few methods to help you set the execution time of your schedules.
-If you don't call any of this method, the job will run every minute (* * * * *).
+If you don't call any of this method, the job will run every minute (\* \* \* \* \*).
 
 - `at` - This method accepts any expression supported by [dragonmantank/cron-expression](https://github.com/dragonmantank/cron-expression)
-    ```php
-    $scheduler->php('script.php')->at('* * * * *');
-    ```
+  ```php
+  $scheduler->php('script.php')->at('* * * * *');
+  ```
 - `everyMinute` - Run every minute. You can optionally pass a `$minute` to specify the job runs every `$minute` minutes.
-    ```php
-    $scheduler->php('script.php')->everyMinute();
-    $scheduler->php('script.php')->everyMinute(5);
-    ```
+  ```php
+  $scheduler->php('script.php')->everyMinute();
+  $scheduler->php('script.php')->everyMinute(5);
+  ```
 - `hourly` - Run once per hour. You can optionally pass the `$minute` you want to run, by default it will run every hour at minute '00'.
-    ```php
-    $scheduler->php('script.php')->hourly();
-    $scheduler->php('script.php')->hourly(53);
-    ```
+  ```php
+  $scheduler->php('script.php')->hourly();
+  $scheduler->php('script.php')->hourly(53);
+  ```
 - `daily` - Run once per day. You can optionally pass `$hour` and `$minute` to have more granular control (or a string `hour:minute`)
-    ```php
-    $scheduler->php('script.php')->daily();
-    $scheduler->php('script.php')->daily(22, 03);
-    $scheduler->php('script.php')->daily('22:03');
-    ```
+  ```php
+  $scheduler->php('script.php')->daily();
+  $scheduler->php('script.php')->daily(22, 03);
+  $scheduler->php('script.php')->daily('22:03');
+  ```
 
 There are additional helpers for weekdays (all accepting optionals hour and minute - defaulted at 00:00)
+
 - `sunday`
 - `monday`
 - `tuesday`
@@ -198,6 +210,7 @@ $scheduler->php('script.php')->sunday(12, 30);
 ```
 
 And additional helpers for months (all accepting optionals day, hour and minute - defaulted to the 1st of the month at 00:00)
+
 - `january`
 - `february`
 - `march`
@@ -264,6 +277,7 @@ $scheduler->php('script.php')->output([
 
 You can optionally customize the `Swift_Mailer` instance with a custom `Swift_Transport`.
 You can configure:
+
 - `subject` - The subject of the email sent
 - `from` - The email address set as sender
 - `body` - The body of the email
@@ -324,7 +338,7 @@ The jobs that are due to run are being ordered by their execution: jobs that can
 
 ### Schedules overlapping
 
-To prevent the execution of a schedule while the previous execution is still in progress, use the method `onlyOne`. To avoid overlapping, the Scheduler needs to create **lock files**.
+To prevent the execution of a schedule while the previous execution is still in progress, use the method `onlyOne`. This can be achieved either by creating **lock files** or using **Redis** for distributed environments.
 By default it will be used the directory path used for temporary files.
 
 You can specify a custom directory path globally, when creating a new Scheduler instance.
@@ -347,6 +361,25 @@ $scheduler->php('script.php')->onlyOne();
 
 $scheduler->php('script.php')->onlyOne('path/to/my/tmp/dir');
 $scheduler->php('other_script.php')->onlyOne('path/to/my/other/tmp/dir');
+```
+
+Using **Redis** for Distributed Locking
+For environments where distributed locking is required, such as in cloud or containerized environments, **Redis** can be used.
+
+First, ensure the Redis client is set up and passed to the Scheduler instance:
+
+```php
+$redis = new Redis();
+$redis->connect('127.0.0.1', 6379);
+// $redis->auth('yourpassword'); // Uncomment if authentication is needed
+
+$scheduler = new Scheduler([
+    'redisClient' => $redis,
+    // Optionally specify a custom prefix for keys
+    'redisPrefix' => 'my_app_prefix:'
+]);
+
+$scheduler->php('script.php')->onlyOne();
 ```
 
 In some cases you might want to run the job also if it's overlapping.
@@ -408,8 +441,10 @@ $scheduler->php('script.php')
 ```
 
 ### Multiple scheduler runs
+
 In some cases you might need to run the scheduler multiple times in the same script.
 Although this is not a common case, the following methods will allow you to re-use the same instance of the scheduler.
+
 ```php
 # some code
 $scheduler->run();
@@ -421,6 +456,7 @@ $scheduler->resetRun()
 ```
 
 Another handy method if you are re-using the same instance of the scheduler with different jobs (e.g. job coming from an external source - db, file ...) on every run, is to clear the current scheduled jobs.
+
 ```php
 $scheduler->clearJobs();
 
@@ -434,6 +470,7 @@ $scheduler->resetRun()
 ```
 
 ### Faking scheduler run time
+
 When running the scheduler you might pass an `DateTime` to fake the scheduler run time.
 The resons for this feature are described [here](https://github.com/peppeocchi/php-cron-scheduler/pull/28);
 
@@ -444,6 +481,7 @@ $scheduler->run($fakeRunTime);
 ```
 
 ### Job failures
+
 If some job fails, you can access list of failed jobs and reasons for failures.
 
 ```php
@@ -458,28 +496,35 @@ $job = $failedJob->getJob();
 ```
 
 ### Worker
+
 You can simulate a cronjob by starting a worker. Let's see a simple example
+
 ```php
 $scheduler = new Scheduler();
 $scheduler->php('some/script.php');
 $scheduler->work();
 ```
+
 The above code starts a worker that will run your job/s every minute.
 This is meant to be a testing/debugging tool, but you're free to use it however you like.
 You can optionally pass an array of "seconds" of when you want the worker to run your jobs, for example by passing `[0, 30]`, the worker will run your jobs at second **0** and at second **30** of the minute.
+
 ```php
 $scheduler->work([0, 10, 25, 50, 55]);
 ```
 
 It is highly advisable that you run your worker separately from your scheduler, although you can run the worker within your scheduler. The problem comes when your scheduler has one or more synchronous job, and the worker will have to wait for your job to complete before continuing the loop. For example
+
 ```php
 $scheduler->call(function () {
     sleep(120);
 });
 $scheduler->work();
 ```
+
 The above will skip more than one execution, so it won't run anymore every minute but it will run probably every 2 or 3 minutes.
 Instead the preferred approach would be to separate the worker from your scheduler.
+
 ```php
 // File scheduler.php
 $scheduler = new Scheduler();
@@ -488,15 +533,18 @@ $scheduler->call(function () {
 });
 $scheduler->run();
 ```
+
 ```php
 // File worker.php
 $scheduler = new Scheduler();
 $scheduler->php('scheduler.php');
 $scheduler->work();
 ```
+
 Then in your command line run `php worker.php`. This will start a foreground process that you can kill by simply exiting the command.
 
 The worker is not meant to collect any data about your runs, and as already said it is meant to be a testing/debugging tool.
 
 ## License
+
 [The MIT License (MIT)](LICENSE)

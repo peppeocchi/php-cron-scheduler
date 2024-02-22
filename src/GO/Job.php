@@ -1,13 +1,16 @@
-<?php namespace GO;
+<?php
+
+namespace GO;
 
 use DateTime;
 use Exception;
 use InvalidArgumentException;
+use Redis;
 
 class Job
 {
-    use Traits\Interval,
-        Traits\Mailer;
+    use Traits\Interval;
+    use Traits\Mailer;
 
     /**
      * Job identifier.
@@ -144,13 +147,29 @@ class Job
     private $outputMode;
 
     /**
+     * Redis client
+     *
+     * @var \Redis
+     */
+    private $redisClient = null;
+
+    /**
+     * Redis prefix
+     *
+     * @var string
+     */
+    private $redisPrefix = 'cron_lock:';
+
+    /**
      * Create a new Job instance.
      *
      * @param  string|callable  $command
      * @param  array            $args
      * @param  string           $id
+     * @param  \Redis           $redisClient
+     * @param  string           $redisPrefix
      */
-    public function __construct($command, $args = [], $id = null)
+    public function __construct($command, $args = [], $id = null, $redisClient = null, $redisPrefix = 'cron_lock:')
     {
         if (is_string($id)) {
             $this->id = $id;
@@ -172,6 +191,12 @@ class Job
 
         $this->command = $command;
         $this->args = $args;
+
+        // Set the Redis client and prefix
+        if ($redisClient) {
+            $this->redisClient = $redisClient;
+            $this->redisPrefix = $redisPrefix;
+        }
     }
 
     /**
@@ -259,24 +284,56 @@ class Job
      */
     public function onlyOne($tempDir = null, callable $whenOverlapping = null)
     {
-        if ($tempDir === null || ! is_dir($tempDir)) {
-            $tempDir = $this->tempDir;
-        }
+        if ($this->redisClient) {
+            $lockKey = $this->redisPrefix . $this->id;
+            $lockAcquired = $this->redisClient->setnx($lockKey, 1);
 
-        $this->lockFile = implode('/', [
-            trim($tempDir),
-            trim($this->id) . '.lock',
-        ]);
-
-        if ($whenOverlapping) {
-            $this->whenOverlapping = $whenOverlapping;
+            if ($lockAcquired) {
+                $this->redisClient->expire($lockKey, 3600); // Expire the lock after 1 hour
+            } else {
+                if ($whenOverlapping) {
+                    $this->whenOverlapping = $whenOverlapping;
+                    call_user_func($this->whenOverlapping);
+                }
+                return $this;
+            }
         } else {
-            $this->whenOverlapping = function () {
-                return false;
-            };
+            // Fallback to file lock mechanism
+            if ($tempDir === null || ! is_dir($tempDir)) {
+                $tempDir = $this->tempDir;
+            }
+
+            $this->lockFile = implode('/', [
+                trim($tempDir),
+                trim($this->id) . '.lock',
+            ]);
+
+            if ($whenOverlapping) {
+                $this->whenOverlapping = $whenOverlapping;
+            } else {
+                $this->whenOverlapping = function () {
+                    return false;
+                };
+            }
         }
 
         return $this;
+    }
+
+    /**
+     * Set the job schedule time.
+     *
+     * @param  string  $expression
+     * @return self
+     */
+    private function releaseLock()
+    {
+        if ($this->redisClient) {
+            $lockKey = $this->redisPrefix . $this->id;
+            $this->redisClient->del([$lockKey]);
+        } else {
+            $this->removeLockFile();
+        }
     }
 
     /**
