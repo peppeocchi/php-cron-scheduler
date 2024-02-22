@@ -76,7 +76,6 @@ class JobTest extends TestCase
         $this->assertEquals(1, $this->redis->exists($lockKey));
     }
 
-
     public function testShouldAlwaysGenerateAnId()
     {
         $job1 = new Job('ls');

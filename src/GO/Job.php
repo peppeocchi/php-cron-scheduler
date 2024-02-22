@@ -2,10 +2,10 @@
 
 namespace GO;
 
+use Redis;
 use DateTime;
 use Exception;
 use InvalidArgumentException;
-use Redis;
 
 class Job
 {
@@ -147,14 +147,14 @@ class Job
     private $outputMode;
 
     /**
-     * Redis client
+     * Redis client.
      *
-     * @var \Redis
+     * @var Redis
      */
     private $redisClient = null;
 
     /**
-     * Redis prefix
+     * Redis prefix.
      *
      * @var string
      */
@@ -166,7 +166,7 @@ class Job
      * @param  string|callable  $command
      * @param  array            $args
      * @param  string           $id
-     * @param  \Redis           $redisClient
+     * @param  Redis            $redisClient
      * @param  string           $redisPrefix
      */
     public function __construct($command, $args = [], $id = null, $redisClient = null, $redisPrefix = 'cron_lock:')
@@ -295,6 +295,7 @@ class Job
                     $this->whenOverlapping = $whenOverlapping;
                     call_user_func($this->whenOverlapping);
                 }
+
                 return $this;
             }
         } else {
