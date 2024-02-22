@@ -311,6 +311,7 @@ class Job
 
         if (! $this->lockAcquired && $whenOverlapping) {
             call_user_func($whenOverlapping);
+
             return $this; // Return early if overlap is detected
         }
 
@@ -435,7 +436,7 @@ class Job
     public function run()
     {
         // Check if the lock was not acquired, indicating another instance is already running
-        if (!$this->lockAcquired) {
+        if (! $this->lockAcquired) {
             return false; // Exit the method without running the job
         }
 
