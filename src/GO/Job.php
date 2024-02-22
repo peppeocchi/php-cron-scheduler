@@ -241,6 +241,19 @@ class Job
      */
     public function isOverlapping()
     {
+        if ($this->redisClient) {
+            $lockKey = $this->redisPrefix . $this->id;
+            $lockValue = $this->redisClient->exists($lockKey);
+
+            if ($lockValue != null) {
+                $lockAcquired = $this->redisClient->get($lockKey);
+            } else {
+                return false;
+            }
+
+            return call_user_func($this->whenOverlapping, $lockAcquired) === false;
+        }
+
         return $this->lockFile &&
                file_exists($this->lockFile) &&
                call_user_func($this->whenOverlapping, filemtime($this->lockFile)) === false;
@@ -286,11 +299,7 @@ class Job
     {
         if ($this->redisClient) {
             $lockKey = $this->redisPrefix . $this->id;
-            $lockAcquired = $this->redisClient->setnx($lockKey, 1);
-
-            if ($lockAcquired) {
-                $this->redisClient->expire($lockKey, 3600); // Expire the lock after 1 hour
-            }
+            $this->redisClient->setnx($lockKey, time());
         } else {
             // Fallback to file lock mechanism
             if ($tempDir === null || ! is_dir($tempDir)) {
