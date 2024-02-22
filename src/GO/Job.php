@@ -291,11 +291,6 @@ class Job
             if ($lockAcquired) {
                 $this->redisClient->expire($lockKey, 3600); // Expire the lock after 1 hour
             } else {
-                if ($whenOverlapping) {
-                    $this->whenOverlapping = $whenOverlapping;
-                    call_user_func($this->whenOverlapping);
-                }
-
                 return $this;
             }
         } else {
@@ -308,14 +303,14 @@ class Job
                 trim($tempDir),
                 trim($this->id) . '.lock',
             ]);
+        }
 
-            if ($whenOverlapping) {
-                $this->whenOverlapping = $whenOverlapping;
-            } else {
-                $this->whenOverlapping = function () {
-                    return false;
-                };
-            }
+        if ($whenOverlapping) {
+            $this->whenOverlapping = $whenOverlapping;
+        } else {
+            $this->whenOverlapping = function () {
+                return false;
+            };
         }
 
         return $this;
