@@ -2,7 +2,6 @@
 
 namespace GO;
 
-use Redis;
 use DateTime;
 use Exception;
 use InvalidArgumentException;
@@ -149,7 +148,7 @@ class Job
     /**
      * Redis client.
      *
-     * @var Redis
+     * @var \Redis
      */
     private $redisClient = null;
 
@@ -166,8 +165,6 @@ class Job
      * @param  string|callable  $command
      * @param  array            $args
      * @param  string           $id
-     * @param  Redis            $redisClient
-     * @param  string           $redisPrefix
      */
     public function __construct($command, $args = [], $id = null)
     {
