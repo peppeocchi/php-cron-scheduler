@@ -220,8 +220,8 @@ class Job
     public function isOverlapping()
     {
         return $this->lockFile &&
-               file_exists($this->lockFile) &&
-               call_user_func($this->whenOverlapping, filemtime($this->lockFile)) === false;
+            file_exists($this->lockFile) &&
+            call_user_func($this->whenOverlapping, filemtime($this->lockFile)) === false;
     }
 
     /**
@@ -304,31 +304,34 @@ class Job
             }
         }
 
-        // Add the boilerplate to redirect the output to file/s
+        // Handle output redirection for different platforms
         if (count($this->outputTo) > 0) {
             if ($this->captureStdErr) {
                 $compiled .= ' 2>&1';
             }
 
-            $compiled .= ' | tee ';
-            $compiled .= $this->outputMode === 'a' ? '-a ' : '';
             foreach ($this->outputTo as $file) {
-                $compiled .= $file . ' ';
+                $compiled .= ' >> ' . escapeshellarg($file);
             }
-
-            $compiled = trim($compiled);
         }
 
-        // Add boilerplate to remove lockfile after execution
+        // Handle lock file removal
         if ($this->lockFile) {
-            $compiled .= '; rm ' . $this->lockFile;
+            $lockFile = escapeshellarg($this->lockFile);
+            if (PHP_OS_FAMILY === 'Windows') {
+                $compiled .= " && del $lockFile";
+            } else {
+                $compiled .= " && rm $lockFile";
+            }
         }
 
-        // Add boilerplate to run in background
+        // Background execution
         if ($this->canRunInBackground()) {
-            // Parentheses are need execute the chain of commands in a subshell
-            // that can then run in background
-            $compiled = '(' . $compiled . ') > /dev/null 2>&1 &';
+            if (PHP_OS_FAMILY === 'Windows') {
+                $compiled = 'start /B ' . $compiled;
+            } else {
+                $compiled .= ' &';
+            }
         }
 
         return trim($compiled);
