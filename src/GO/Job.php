@@ -587,4 +587,16 @@ class Job
 
         return $this;
     }
+
+    /**
+     * @return Cron\CronExpression
+     */
+    public function getExecutionTime()
+    {
+        if (! $this->executionTime) {
+            return Cron\CronExpression::factory('* * * * *');
+        }
+
+        return $this->executionTime;
+    }
 }
