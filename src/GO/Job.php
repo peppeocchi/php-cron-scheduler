@@ -1,7 +1,7 @@
 <?php namespace GO;
 
 use DateTime;
-use Exception;
+use Throwable;
 use InvalidArgumentException;
 
 class Job
@@ -433,7 +433,7 @@ class Job
      * Execute a callable job.
      *
      * @param  callable  $fn
-     * @throws Exception
+     * @throws Throwable
      * @return string
      */
     private function exec(callable $fn)
@@ -442,7 +442,7 @@ class Job
 
         try {
             $returnData = call_user_func_array($fn, $this->args);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             ob_end_clean();
             throw $e;
         }
