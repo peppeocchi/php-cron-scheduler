@@ -322,8 +322,8 @@ class Scheduler
         while (true) {
             if (in_array((int) date('s'), $seconds)) {
                 $this->run();
-                sleep(1);
             }
+            sleep(1);
         }
     }
 }
